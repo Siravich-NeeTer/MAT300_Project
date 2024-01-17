@@ -1,0 +1,183 @@
+#include "Project1.h"
+
+Project1::Project1(GraphTable& graphTable)
+	: m_GraphTable(&graphTable),
+		m_CurrentGraphMethod(GRAPH_METHOD::BB)
+{
+	// Get DragPointController -> Use for creating DragPoint
+	m_RefDragPointController = DragPointController::GetInstance();
+
+	// Initialize
+	InitGraph();
+	PlotGraph();
+}
+
+void Project1::Update(Window& window, Camera& camera, const float& dt)
+{
+	// If ControlPoints is empty (degree = 0) -> no need to update
+	if (m_ControlPoints.empty())
+		return;
+
+	for (int idx = 0; idx < m_ControlPoints.size(); idx++)
+	{
+		// If one of ControlPoints move -> Update entire graph
+		if (m_ControlPoints[idx]->isMove)
+		{
+			// Clear old one & Plot new one
+			m_MainGraph->Clear();
+			PlotGraph();
+		}
+	}
+
+	// Update currentMousePosition
+	m_CurrentMousePosition = ConvertMouseToWorldSpace(window, camera, ConvertMouseToNDC(window, { Input::mouseX, Input::mouseY }));
+
+	UpdateUI();
+}
+void Project1::UpdateUI()
+{
+	ImGui::Begin("Project_1");
+
+	// -------------------- Print Mouse Position --------------------
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x / m_GraphTable->GetTableScale() << ',' << m_CurrentMousePosition.y;
+	ImGui::Text(std::string("Current Position: (" + stream.str() + ")").c_str());
+	// --------------------------------------------------------------
+
+	if (ImGui::DragInt("Degree", &degree, 1, 1, 100)) { UpdateDegree(); }
+	if (ImGui::Checkbox("Hide Point", &isHidePoint))
+	{ 
+		for (int idx = 0; idx < m_ControlPoints.size(); idx++)
+		{
+			m_ControlPoints[idx]->isActive = !isHidePoint;
+		}
+	}
+
+	// ---------------------- Graphing Method -----------------------
+	if (ImGui::CollapsingHeader("Graph"))
+	{
+		if (ImGui::CollapsingHeader("Graphing Method"))
+		{
+			ImGui::Text(std::string("Current Method: " + GetGraphingMethod()).c_str());
+
+			if (ImGui::Button("BB", ImVec2(100, 0)))
+			{
+				m_CurrentGraphMethod = GRAPH_METHOD::BB;
+				m_MainGraph->Clear();
+				PlotGraph();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("NLI", ImVec2(100, 0)))
+			{
+				m_CurrentGraphMethod = GRAPH_METHOD::NLI;
+				m_MainGraph->Clear();
+				PlotGraph();
+			}
+		}
+		
+		ImGui::NewLine();
+
+		ImGui::SliderFloat("Graph Thickness", &m_MainGraph->GetThickness(), 1.0f, 8.0f);
+
+		ImGui::NewLine();
+
+		ImGui::ColorPicker3("Graph Color", &m_MainGraph->GetColor()[0]);
+
+	}
+	// ----------------------- Control Point ------------------------
+	if (ImGui::CollapsingHeader("Control Point"))
+	{
+		for (int i = 0; i <= degree; i++)
+		{
+			if (ImGui::SliderFloat(std::string("a" + std::to_string(i)).c_str(), &m_ControlPoints[i]->position.y, -3.0f, 3.0f))
+			{
+				m_MainGraph->Clear();
+				PlotGraph();
+			}
+		}
+	}
+	// --------------------------------------------------------------
+
+	ImGui::End();
+}
+
+void Project1::InitGraph()
+{
+	// Add new Graph
+	m_MainGraph = m_GraphTable->AddGraph("Bernstein Polynomial", { 0.0f, 1.0f, 0.0f });
+	
+	// Initialize Degree = 1
+	degree = 1;
+	isHidePoint = false;
+
+	// Initialize Control Points a0, a1
+	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f * m_GraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_GraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+}
+void Project1::PlotGraph()
+{
+	// Plot Graph
+	// Using BB(Berstein Polynomials) Method
+	if (m_CurrentGraphMethod == GRAPH_METHOD::BB)
+	{
+		// Loop through t (more step_t more precision)
+		for (float t = 0.0f; t <= 1.0f; t += 0.001f)
+		{
+			float y = 0.0f;
+			for (int i = 0; i <= degree; i++)
+			{
+				y += m_ControlPoints[i]->position.y * BernsteinPolynomial(i, degree, t);
+			}
+			m_MainGraph->Plot({ t,  y });
+		}
+	}
+	// Using NLI(Nested Linear Interpolation) Method
+	else if (m_CurrentGraphMethod == GRAPH_METHOD::NLI)
+	{
+		for (float t = 0.0f; t <= 1.0f; t += 0.001f)
+		{
+			std::vector<float> currentCoefficient(degree + 1);
+			// Update Coefficients (aka. Base) to std::vector 
+			for (int i = 0; i <= degree; i++)
+			{
+				currentCoefficient[i] = m_ControlPoints[i]->position.y;
+			}
+
+			for (int i = 1; i <= degree; i++)
+			{
+				for (int j = 0; j <= degree - i; j++)
+				{
+					// Calculate new Coefficients using previous coefficients
+					currentCoefficient[j] = (1.0f - t) * currentCoefficient[j] + t * currentCoefficient[j + 1];
+				}
+				currentCoefficient.pop_back();
+			}
+			m_MainGraph->Plot({ t, currentCoefficient.back()});
+		}
+	}
+}
+
+int* Project1::UpdateDegree()
+{
+	while(degree > m_ControlPoints.size() - 1)
+		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_GraphTable->GetTableScale(), 1.0f), m_ControlPoints[0]->color));
+	while (degree < m_ControlPoints.size() - 1)
+	{
+		m_RefDragPointController->RemoveDragPoint(m_ControlPoints.back());
+		m_ControlPoints.pop_back();
+	}
+
+	float step = 0.0f;
+	for (int idx = 0; idx <= degree; idx++, step += 1.0f / degree * m_GraphTable->GetTableScale())
+	{
+		m_ControlPoints[idx]->position.x = step;
+	}
+	m_MainGraph->Clear();
+	PlotGraph();
+
+	return &degree;
+}
+std::string Project1::GetGraphingMethod() const
+{
+	return (m_CurrentGraphMethod == GRAPH_METHOD::BB ? "BB" : "NLI");
+}
