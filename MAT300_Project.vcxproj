@@ -158,11 +158,11 @@
     <ClCompile Include="External Libraries\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="External Libraries\imgui\imgui_tables.cpp" />
     <ClCompile Include="External Libraries\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\Bernstein.cpp" />
     <ClCompile Include="src\CustomMath.cpp" />
     <ClCompile Include="src\DragPointController.cpp" />
     <ClCompile Include="src\GraphTable.cpp" />
     <ClCompile Include="src\Project1.cpp" />
+    <ClCompile Include="src\Project2.cpp" />
     <ClCompile Include="src\Renderer\BaseShader.cpp" />
     <ClCompile Include="src\Renderer\ElementBufferObject.cpp" />
     <ClCompile Include="External Libraries\GLAD\src\glad.c" />
@@ -188,11 +188,12 @@
     <ClInclude Include="External Libraries\imgui\imstb_rectpack.h" />
     <ClInclude Include="External Libraries\imgui\imstb_textedit.h" />
     <ClInclude Include="External Libraries\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\Bernstein.h" />
     <ClInclude Include="src\CustomMath.h" />
     <ClInclude Include="src\DragPointController.h" />
     <ClInclude Include="src\GraphTable.h" />
+    <ClInclude Include="src\IProject.h" />
     <ClInclude Include="src\Project1.h" />
+    <ClInclude Include="src\Project2.h" />
     <ClInclude Include="src\Renderer\BaseShader.h" />
     <ClInclude Include="src\Renderer\ElementBufferObject.h" />
     <ClInclude Include="External Libraries\stb\stb_image.h" />

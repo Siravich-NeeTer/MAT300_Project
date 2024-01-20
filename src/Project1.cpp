@@ -1,15 +1,23 @@
 #include "Project1.h"
 
 Project1::Project1(GraphTable& graphTable)
-	: m_GraphTable(&graphTable),
-		m_CurrentGraphMethod(GRAPH_METHOD::BB)
+	: IProject(graphTable)
 {
-	// Get DragPointController -> Use for creating DragPoint
-	m_RefDragPointController = DragPointController::GetInstance();
+	// Init GraphTable
+	graphTable.InitTable(GraphTable::TableType::YT_TABLE, { -3.0f, 3.0f });
+	m_CurrentGraphMethod = GRAPH_METHOD::BB;
+
+	// Set DragPointController Type
+	m_RefDragPointController->SetDragType(DragPointController::DragType::DRAG_Y);
 
 	// Initialize
 	InitGraph();
 	PlotGraph();
+}
+Project1::~Project1()
+{
+	m_RefGraphTable->RemoveGraph(m_MainGraph);
+	m_RefDragPointController->ClearAllDragPoint();
 }
 
 void Project1::Update(Window& window, Camera& camera, const float& dt)
@@ -40,7 +48,7 @@ void Project1::UpdateUI()
 
 	// -------------------- Print Mouse Position --------------------
 	std::stringstream stream;
-	stream << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x / m_GraphTable->GetTableScale() << ',' << m_CurrentMousePosition.y;
+	stream << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x / m_RefGraphTable->GetTableScale() << ',' << m_CurrentMousePosition.y;
 	ImGui::Text(std::string("Current Position: (" + stream.str() + ")").c_str());
 	// --------------------------------------------------------------
 
@@ -104,15 +112,15 @@ void Project1::UpdateUI()
 void Project1::InitGraph()
 {
 	// Add new Graph
-	m_MainGraph = m_GraphTable->AddGraph("Bernstein Polynomial", { 0.0f, 1.0f, 0.0f });
+	m_MainGraph = m_RefGraphTable->AddGraph("Bernstein Polynomial", { 0.0f, 1.0f, 0.0f });
 	
 	// Initialize Degree = 1
 	degree = 1;
 	isHidePoint = false;
 
 	// Initialize Control Points a0, a1
-	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f * m_GraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_GraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f * m_RefGraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_RefGraphTable->GetTableScale(), 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 }
 void Project1::PlotGraph()
 {
@@ -134,25 +142,16 @@ void Project1::PlotGraph()
 	// Using NLI(Nested Linear Interpolation) Method
 	else if (m_CurrentGraphMethod == GRAPH_METHOD::NLI)
 	{
+		std::vector<float> coefficientList(degree + 1);
+		// Update Coefficients (aka. Base) to std::vector 
+		for (int i = 0; i <= degree; i++)
+		{
+			coefficientList[i] = m_ControlPoints[i]->position.y;
+		}
+
 		for (float t = 0.0f; t <= 1.0f; t += 0.001f)
 		{
-			std::vector<float> currentCoefficient(degree + 1);
-			// Update Coefficients (aka. Base) to std::vector 
-			for (int i = 0; i <= degree; i++)
-			{
-				currentCoefficient[i] = m_ControlPoints[i]->position.y;
-			}
-
-			for (int i = 1; i <= degree; i++)
-			{
-				for (int j = 0; j <= degree - i; j++)
-				{
-					// Calculate new Coefficients using previous coefficients
-					currentCoefficient[j] = (1.0f - t) * currentCoefficient[j] + t * currentCoefficient[j + 1];
-				}
-				currentCoefficient.pop_back();
-			}
-			m_MainGraph->Plot({ t, currentCoefficient.back()});
+			m_MainGraph->Plot({ t, NestedLinearInterpolation(coefficientList, t)});
 		}
 	}
 }
@@ -160,7 +159,7 @@ void Project1::PlotGraph()
 int* Project1::UpdateDegree()
 {
 	while(degree > m_ControlPoints.size() - 1)
-		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_GraphTable->GetTableScale(), 1.0f), m_ControlPoints[0]->color));
+		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f * m_RefGraphTable->GetTableScale(), 1.0f), m_ControlPoints[0]->color));
 	while (degree < m_ControlPoints.size() - 1)
 	{
 		m_RefDragPointController->RemoveDragPoint(m_ControlPoints.back());
@@ -168,7 +167,7 @@ int* Project1::UpdateDegree()
 	}
 
 	float step = 0.0f;
-	for (int idx = 0; idx <= degree; idx++, step += 1.0f / degree * m_GraphTable->GetTableScale())
+	for (int idx = 0; idx <= degree; idx++, step += 1.0f / degree * m_RefGraphTable->GetTableScale())
 	{
 		m_ControlPoints[idx]->position.x = step;
 	}
@@ -176,8 +175,4 @@ int* Project1::UpdateDegree()
 	PlotGraph();
 
 	return &degree;
-}
-std::string Project1::GetGraphingMethod() const
-{
-	return (m_CurrentGraphMethod == GRAPH_METHOD::BB ? "BB" : "NLI");
 }

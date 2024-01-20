@@ -14,8 +14,6 @@
 
 #include "Camera.h"
 
-#include "Bernstein.h"
-
 class Graph
 {
 	public:
@@ -102,13 +100,21 @@ class Graph
 class GraphTable
 {
 	public:
-		GraphTable(int yMin, int yMax);
+		enum TableType
+		{
+			XY_TABLE, YT_TABLE
+		};
+
+		GraphTable();
 		~GraphTable();
 
+		void InitTable(TableType tableType, const glm::vec2& verticalSize = { -1.0f, 1.0f }, const glm::vec2& horizontalSize = { -1.0f, 1.0f });
 		void Render(const Window& window, const Camera& camera);
 
 		Graph* AddGraph(const std::string& name = "", const glm::vec3& color = { 1.0f, 0.0f, 0.0f });
 		bool RemoveGraph(Graph* graph);
+
+		void Reset();
 
 		float GetTableScale() const { return tScale; }
 

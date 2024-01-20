@@ -60,6 +60,10 @@ void TextRenderer::Init()
         Characters[c] = character;
     }
 }
+void TextRenderer::Reset()
+{
+    textList.clear();
+}
 void TextRenderer::Clean()
 {
     FT_Done_Face(m_Face);

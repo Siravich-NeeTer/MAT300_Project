@@ -66,6 +66,7 @@ class TextRenderer
 		}
 
 		void Init();
+		void Reset();
 		void Clean();
 
 		Text* AddText(const std::string& text, glm::vec2 pos, float fontsize, const glm::vec3& color);

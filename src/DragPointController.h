@@ -28,8 +28,14 @@ struct DragPoint
 class DragPointController
 {
 	public:
+		enum DragType
+		{
+			DRAG_X, DRAG_Y, DRAG_XY
+		};
+
 		DragPointController()
-			: m_Shader("DragPointShader")
+			: m_Shader("DragPointShader"),
+				m_CurrentDragType(DragType::DRAG_XY)
 		{
 			// Create Shader
 			m_Shader.AttachShader(BaseShader("Shader/DragPoint.vert"));
@@ -80,6 +86,14 @@ class DragPointController
 
 			m_DragPoints.erase(it);
 		}
+		void ClearAllDragPoint()
+		{
+			for (int idx = m_DragPoints.size() - 1; idx >= 0; idx--)
+			{
+				delete m_DragPoints[idx];
+			}
+			m_DragPoints.clear();
+		}
 
 		void Update(const Window& window, const Camera& camera, const float& dt)
 		{
@@ -90,7 +104,19 @@ class DragPointController
 			if (m_CurrentSelectedDragPoint && Input::IsKeyPressed(GLFW_MOUSE_BUTTON_LEFT))
 			{
 				m_CurrentSelectedDragPoint->isMove = true;
-				m_CurrentSelectedDragPoint->position.y = mouseWorld.y;
+				switch (m_CurrentDragType)
+				{
+					case DragType::DRAG_X: 
+						m_CurrentSelectedDragPoint->position.x = mouseWorld.x;
+						break;
+					case DragType::DRAG_Y:
+						m_CurrentSelectedDragPoint->position.y = mouseWorld.y;
+						break;
+					case DragType::DRAG_XY:
+						m_CurrentSelectedDragPoint->position.x = mouseWorld.x;
+						m_CurrentSelectedDragPoint->position.y = mouseWorld.y;
+						break;
+				}
 				return;
 			}
 
@@ -134,6 +160,12 @@ class DragPointController
 			}
 		}
 
+		void SetDragType(DragType dragType)
+		{
+			m_CurrentDragType = dragType;
+		}
+		DragType GetDragType() const { return m_CurrentDragType; }
+
 	private:
 		static DragPointController* m_Instance;
 
@@ -145,4 +177,5 @@ class DragPointController
 		const float m_PointSize = 75.0f;
 		std::vector<DragPoint*> m_DragPoints;
 		DragPoint* m_CurrentSelectedDragPoint;
+		DragType m_CurrentDragType;
 };

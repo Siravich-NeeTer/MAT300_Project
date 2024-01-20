@@ -1,5 +1,6 @@
 #include "CustomMath.h"
 
+// ---------------------- Class Pascal ----------------------
 std::vector<std::vector<double>> Pascal::m_PascalValue;
 
 // Get PascalValue using iterative method
@@ -40,4 +41,25 @@ void Pascal::PrintPascal()
 		}
 		std::cout << "\n";
 	}
+}
+// ----------------------------------------------------------
+
+float BernsteinPolynomial(int i, int degree, float t)
+{
+	return Pascal::GetValue(degree, i) * std::pow(1.0f - t, degree - i) * std::pow(t, i);
+}
+
+float NestedLinearInterpolation(std::vector<float> coefficientList, float t)
+{
+	int degree = coefficientList.size() - 1;
+	for (int i = 1; i <= degree; i++)
+	{
+		for (int j = 0; j <= degree - i; j++)
+		{
+			// Calculate new Coefficients using previous coefficients
+			coefficientList[j] = (1.0f - t) * coefficientList[j] + t * coefficientList[j + 1];
+		}
+		coefficientList.pop_back();
+	}
+	return coefficientList.back();
 }

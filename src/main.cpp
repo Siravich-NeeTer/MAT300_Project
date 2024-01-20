@@ -19,13 +19,22 @@
 #include "DragPointController.h"
 
 #include "Project1.h"
+#include "Project2.h"
 
 // Screen Size
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 bool isCameraMove = false;
-glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, -1.0f);
+IProject *BaseProject = nullptr;
+void CleanBaseProject()
+{
+	if (BaseProject)
+	{
+		delete BaseProject;
+		BaseProject = nullptr;
+	}
+}
 
 int main()
 {
@@ -49,8 +58,7 @@ int main()
 	ImGui_ImplOpenGL3_Init("#version 460");
 
 	Camera cam(glm::vec3(2, 0, 5));
-	GraphTable graph(-3, 3);
-	Project1 project1(graph);
+	GraphTable graphTable;
 
 	// --------------- Game Loop ---------------
 	float prevTime = 0.0f;
@@ -75,13 +83,28 @@ int main()
 		cam.Input(dt);
 
 		dragPointController->Update(window, cam, dt);
-		project1.Update(window, cam, dt);
+		
+		if(BaseProject)
+			BaseProject->Update(window, cam, dt);
 
 		// ------- Render Graph & Text --------
 		dragPointController->Render(window, cam);
-		graph.Render(window, cam);
+		graphTable.Render(window, cam);
 		textRenderer->RenderText(window, cam);
 		// ------------ Render GUI ------------
+		ImGui::Begin("Project Selector");
+		if (ImGui::Button("Project 1"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project1(graphTable);
+		}
+		if (ImGui::Button("Project 2"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project2(graphTable);
+		}
+		ImGui::End();
+
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		// ------------------------------------
@@ -95,6 +118,7 @@ int main()
 
 	// --------------- End Program ---------------
 	// Clean Application & Window
+	CleanBaseProject();
 	textRenderer->Clean();
 	dragPointController->Clean();
 	window.Destroy();
