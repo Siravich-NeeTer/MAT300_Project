@@ -96,6 +96,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)External Libraries\GLFW\lib-vc2019;$(SolutionDir)External Libraries\FreeType\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;freetype.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /d /y "$(ProjectDir)External Libraries\FreeType\lib\freetype.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,6 +118,9 @@
       <AdditionalLibraryDirectories>$(SolutionDir)External Libraries\GLFW\lib-vc2019;$(SolutionDir)External Libraries\FreeType\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;freetype.lib;User32.lib;Gdi32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /d /y "$(ProjectDir)External Libraries\FreeType\lib\freetype.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
