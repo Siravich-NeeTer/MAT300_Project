@@ -18,6 +18,8 @@ GraphTable::~GraphTable()
 
 void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, const glm::vec2& horizontalSize)
 {
+	m_CurrentTableType = tableType;
+
 	// Initialize Base-Graph
 	float offset = 0.1f;
 
@@ -48,7 +50,7 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 		if (i == 0)
 			continue;
 
-		TextRenderer::GetInstance()->AddText(std::to_string(i), { -0.2f, i }, 0.2f, { 1.0f, 0.0f, 0.0f });
+		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { -0.2f, i }, 0.2f, { 1.0f, 0.0f, 0.0f }));
 		m_TableVertices.push_back({ -0.05f, i });
 		m_TableVertices.push_back({ 0.05f, i });
 	}
@@ -59,7 +61,7 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 	{
 		m_TableVertices.push_back({ tScale, -0.05f });
 		m_TableVertices.push_back({ tScale,  0.05f });
-		TextRenderer::GetInstance()->AddText("1", { 1 * tScale + offset, 0.0f }, 0.2f, { 1.0f, 0.0f, 0.0f });
+		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText("1", { 1 * tScale + offset, 0.0f }, 0.2f, { 1.0f, 0.0f, 0.0f }));
 	}
 	// - Initialize Graph on X-Axis
 	else
@@ -69,7 +71,7 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 			if (i == 0)
 				continue;
 
-			TextRenderer::GetInstance()->AddText(std::to_string(i), { i, -0.2f }, 0.2f, { 1.0f, 0.0f, 0.0f });
+			m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { i, -0.2f }, 0.2f, { 1.0f, 0.0f, 0.0f }));
 			m_TableVertices.push_back({ i, -0.05f });
 			m_TableVertices.push_back({ i, 0.05f });
 		}
@@ -91,7 +93,10 @@ void GraphTable::Render(const Window& window, const Camera& camera)
 	m_TableShader.Activate();
 	m_TableShader.SetMat4("u_View", camera.GetViewMatrix());
 	m_TableShader.SetMat4("u_Projection", camera.GetPerspective(window));
-	m_TableShader.SetMat4("u_Model", glm::scale(glm::mat4(1.0f), glm::vec3(tScale, 1.0f, 1.0f)));
+	if(m_CurrentTableType == TableType::YT_TABLE)
+		m_TableShader.SetMat4("u_Model", glm::scale(glm::mat4(1.0f), glm::vec3(tScale, 1.0f, 1.0f)));
+	else
+		m_TableShader.SetMat4("u_Model", glm::mat4(1.0f));
 
 	//glLineWidth(20.0f / camera.GetPosition().z);
 	for (Graph* &graph : m_Graphs)
@@ -133,4 +138,11 @@ void GraphTable::Reset()
 		delete m_Graphs[idx];
 	}
 	m_Graphs.clear();
+}
+void GraphTable::SetTextActive(bool active)
+{
+	for (int idx = m_TextGraphList.size() - 1; idx >= 0; idx--)
+	{
+		m_TextGraphList[idx]->active = active;
+	}
 }

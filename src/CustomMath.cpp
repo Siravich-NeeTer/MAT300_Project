@@ -63,3 +63,17 @@ float NestedLinearInterpolation(std::vector<float> coefficientList, float t)
 	}
 	return coefficientList.back();
 }
+glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t)
+{
+	int degree = positionList.size() - 1;
+	for (int i = 1; i <= degree; i++)
+	{
+		for (int j = 0; j <= degree - i; j++)
+		{
+			// Calculate new Coefficients using previous coefficients
+			positionList[j] = (1.0f - t) * positionList[j] + t * positionList[j + 1];
+		}
+		positionList.pop_back();
+	}
+	return positionList.back();
+}

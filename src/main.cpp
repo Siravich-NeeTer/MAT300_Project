@@ -103,6 +103,13 @@ int main()
 			CleanBaseProject();
 			BaseProject = new Project2(graphTable);
 		}
+		if (ImGui::CollapsingHeader("Graph Table Component"))
+		{
+			if (ImGui::Checkbox("Hide Text", &graphTable.IsHideText()))
+			{
+				graphTable.SetTextActive(!graphTable.IsHideText());
+			}
+		}
 		ImGui::End();
 
 		ImGui::Render();

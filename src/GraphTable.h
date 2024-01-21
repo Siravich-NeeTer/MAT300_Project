@@ -39,6 +39,10 @@ class Graph
 		}
 		void Render(Shader& shader)
 		{
+			// If NOT active -> Don't Render
+			if (!m_Active)
+				return;
+
 			if (!m_IsBind)
 			{
 				m_Graph_VAO.Bind();
@@ -72,10 +76,16 @@ class Graph
 		{
 			this->thickness = thickness;
 		}
+		void SetActive(const bool& active)
+		{
+			m_Active = active;
+		}
 
 		std::string &GetName() { return name; }
 		glm::vec3 &GetColor() { return color; }
 		float& GetThickness() { return thickness; }
+		bool& IsActive() { return m_Active; }
+		std::vector<glm::vec2>& GetPointList() { return m_Points; }
 
 		bool operator==(const Graph& lhs)
 		{
@@ -95,6 +105,7 @@ class Graph
 		int m_PointsLimit = 100;
 		bool m_HavePointsLimit = false;
 		bool m_IsBind = false;
+		bool m_Active = true;
 };
 
 class GraphTable
@@ -115,8 +126,10 @@ class GraphTable
 		bool RemoveGraph(Graph* graph);
 
 		void Reset();
+		void SetTextActive(bool active);
 
 		float GetTableScale() const { return tScale; }
+		bool& IsHideText() { return m_IsHideText; }
 
 	private:
 		// Table Component
@@ -131,4 +144,7 @@ class GraphTable
 		Shader m_TableShader;
 
 		const float tScale = 6.0f;
+		TableType m_CurrentTableType;
+		bool m_IsHideText = false;
+		std::vector<Text*> m_TextGraphList;
 };

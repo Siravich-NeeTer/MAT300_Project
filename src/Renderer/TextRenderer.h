@@ -33,6 +33,7 @@ class Text
 		glm::vec2 position;
 		float fontsize;
 		glm::vec3 color;
+		bool active = true;
 
 		float verticalOffset;
 	
@@ -75,7 +76,7 @@ class TextRenderer
 	private:
 		// Declare TextRenderer as Singleton
 		static TextRenderer* m_Instance;
-		std::vector<Text> textList;
+		std::vector<Text*> textList;
 
 		FT_Library m_Library;
 		FT_Face m_Face;

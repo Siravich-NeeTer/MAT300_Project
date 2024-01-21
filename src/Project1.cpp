@@ -8,7 +8,7 @@ Project1::Project1(GraphTable& graphTable)
 	m_CurrentGraphMethod = GRAPH_METHOD::BB;
 
 	// Set DragPointController Type
-	m_RefDragPointController->SetDragType(DragPointController::DragType::DRAG_Y);
+	m_RefDragPointController->SetDragType(DragPoint::DragType::DRAG_Y);
 
 	// Initialize
 	InitGraph();
@@ -47,9 +47,9 @@ void Project1::UpdateUI()
 	ImGui::Begin("Project_1");
 
 	// -------------------- Print Mouse Position --------------------
-	std::stringstream stream;
-	stream << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x / m_RefGraphTable->GetTableScale() << ',' << m_CurrentMousePosition.y;
-	ImGui::Text(std::string("Current Position: (" + stream.str() + ")").c_str());
+	std::stringstream mousePos;
+	mousePos << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x / m_RefGraphTable->GetTableScale() << ',' << m_CurrentMousePosition.y;
+	ImGui::Text(std::string("Mouse Position: (" + mousePos.str() + ")").c_str());
 	// --------------------------------------------------------------
 
 	if (ImGui::DragInt("Degree", &degree, 1, 1, 100)) { UpdateDegree(); }

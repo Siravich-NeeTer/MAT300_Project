@@ -4,6 +4,8 @@
 #include <cmath>
 #include <vector>
 
+#include <glm/glm.hpp>
+
 class Pascal
 {
 	public:
@@ -19,3 +21,4 @@ class Pascal
 float BernsteinPolynomial(int i, int degree, float t);
 // NLI Method
 float NestedLinearInterpolation(std::vector<float> coefficientList, float t);
+glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t);

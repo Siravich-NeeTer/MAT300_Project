@@ -14,13 +14,19 @@
 
 struct DragPoint
 {
+	enum DragType
+	{
+		NONE, DRAG_X, DRAG_Y, DRAG_XY
+	};
+
 	glm::vec2 position;
 	glm::vec3 color;
 	bool isMove;
 	bool isActive;
+	DragType dragType;
 
-	DragPoint(const glm::vec2& _position, const glm::vec3& _color)
-		: position(_position), color(_color), isMove(false), isActive(true)
+	DragPoint(const glm::vec2& _position, const glm::vec3& _color, const DragType &_dragType)
+		: position(_position), color(_color), dragType(_dragType), isMove(false), isActive(true)
 	{
 	}
 };
@@ -28,14 +34,10 @@ struct DragPoint
 class DragPointController
 {
 	public:
-		enum DragType
-		{
-			DRAG_X, DRAG_Y, DRAG_XY
-		};
 
 		DragPointController()
 			: m_Shader("DragPointShader"),
-				m_CurrentDragType(DragType::DRAG_XY)
+				m_CurrentDragType(DragPoint::DragType::DRAG_XY)
 		{
 			// Create Shader
 			m_Shader.AttachShader(BaseShader("Shader/DragPoint.vert"));
@@ -74,7 +76,7 @@ class DragPointController
 
 		DragPoint* AddDragPoint(glm::vec2 pos, glm::vec3 color)
 		{
-			m_DragPoints.push_back(new DragPoint(pos, color));
+			m_DragPoints.push_back(new DragPoint(pos, color, m_CurrentDragType));
 
 			return m_DragPoints.back();
 		}
@@ -106,13 +108,13 @@ class DragPointController
 				m_CurrentSelectedDragPoint->isMove = true;
 				switch (m_CurrentDragType)
 				{
-					case DragType::DRAG_X: 
+					case DragPoint::DragType::DRAG_X:
 						m_CurrentSelectedDragPoint->position.x = mouseWorld.x;
 						break;
-					case DragType::DRAG_Y:
+					case DragPoint::DragType::DRAG_Y:
 						m_CurrentSelectedDragPoint->position.y = mouseWorld.y;
 						break;
-					case DragType::DRAG_XY:
+					case DragPoint::DragType::DRAG_XY:
 						m_CurrentSelectedDragPoint->position.x = mouseWorld.x;
 						m_CurrentSelectedDragPoint->position.y = mouseWorld.y;
 						break;
@@ -123,7 +125,7 @@ class DragPointController
 			m_CurrentSelectedDragPoint = nullptr;
 			for (int i = 0; i < m_DragPoints.size(); i++)
 			{
-				if (!m_DragPoints[i]->isActive)
+				if (!m_DragPoints[i]->isActive || m_DragPoints[i]->dragType == DragPoint::DragType::NONE)
 					continue;
 
 				if (glm::distance(glm::vec2(mouseWorld), m_DragPoints[i]->position) < 0.03f * (m_PointSize / 100.0f))
@@ -160,11 +162,11 @@ class DragPointController
 			}
 		}
 
-		void SetDragType(DragType dragType)
+		void SetDragType(DragPoint::DragType dragType)
 		{
 			m_CurrentDragType = dragType;
 		}
-		DragType GetDragType() const { return m_CurrentDragType; }
+		DragPoint::DragType GetDragType() const { return m_CurrentDragType; }
 
 	private:
 		static DragPointController* m_Instance;
@@ -177,5 +179,5 @@ class DragPointController
 		const float m_PointSize = 75.0f;
 		std::vector<DragPoint*> m_DragPoints;
 		DragPoint* m_CurrentSelectedDragPoint;
-		DragType m_CurrentDragType;
+		DragPoint::DragType m_CurrentDragType;
 };

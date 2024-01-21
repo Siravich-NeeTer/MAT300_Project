@@ -14,6 +14,11 @@ class Project2 : public IProject
 	private:
 		// Our Main Graph
 		Graph* m_MainGraph;
+		Graph* m_DraftLineGraph;
+		DragPoint* m_ControlPoint_t;
+		float m_Current_t = 1.0f;
+
+		bool isHidePolyLine = false;
 
 		void InitGraph();
 		void PlotGraph();

@@ -62,10 +62,16 @@ void TextRenderer::Init()
 }
 void TextRenderer::Reset()
 {
+    for (int idx = textList.size() - 1; idx >= 0; idx--)
+    {
+        delete textList[idx];
+    }
     textList.clear();
 }
 void TextRenderer::Clean()
 {
+    TextRenderer::Reset();
+
     FT_Done_Face(m_Face);
     FT_Done_FreeType(m_Library);
     delete m_Instance;
@@ -73,8 +79,8 @@ void TextRenderer::Clean()
 
 Text* TextRenderer::AddText(const std::string& text, glm::vec2 pos, float fontsize, const glm::vec3& color)
 {
-    textList.emplace_back(text, pos, fontsize, color);
-    return &textList.back();
+    textList.push_back(new Text(text, pos, fontsize, color));
+    return textList.back();
 }
 void TextRenderer::RenderText(Window& window, Camera& camera)
 {
@@ -85,18 +91,21 @@ void TextRenderer::RenderText(Window& window, Camera& camera)
     m_TextShader.SetInt("u_Text", 0);
     m_VAO.Bind();
 
-    for (Text& text : textList)
+    for (Text*& text : textList)
     {
-        m_TextShader.SetVec3("u_TextColor", text.color);
-        glm::vec2 pos = text.position;
-        float scale = text.fontsize / BASE_FONT_SIZE;
+        if (!text->active)
+            continue;
 
-        if (!text.IsVerticalOffsetAssign())
-            CalculateVerticalOffset(text);
-        float verticalOffset = text.verticalOffset;
+        m_TextShader.SetVec3("u_TextColor", text->color);
+        glm::vec2 pos = text->position;
+        float scale = text->fontsize / BASE_FONT_SIZE;
+
+        if (!text->IsVerticalOffsetAssign())
+            CalculateVerticalOffset(*text);
+        float verticalOffset = text->verticalOffset;
         
         std::string::const_iterator c;
-        for (c = text.text.begin(); c != text.text.end(); c++)
+        for (c = text->text.begin(); c != text->text.end(); c++)
         {
             Character ch = Characters[*c];
 
