@@ -53,6 +53,11 @@ void Project1::UpdateUI()
 	// --------------------------------------------------------------
 
 	if (ImGui::DragInt("Degree", &degree, 1, 1, 100)) { UpdateDegree(); }
+	ImGui::SameLine();
+	if (ImGui::SmallButton("+")) { if (degree < 100) { degree++; } UpdateDegree(); }
+	ImGui::SameLine();
+	if (ImGui::SmallButton("-")) { if (degree > 1) { degree--; } UpdateDegree(); }
+
 	if (ImGui::Checkbox("Hide Point", &isHidePoint))
 	{ 
 		for (int idx = 0; idx < m_ControlPoints.size(); idx++)

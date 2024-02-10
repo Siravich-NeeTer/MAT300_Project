@@ -2,11 +2,11 @@
 
 #include "IProject.h"
 
-class Project2 : public IProject
+class Project3 : public IProject
 {
 	public:
-		Project2(GraphTable& graphTable);
-		~Project2();
+		Project3(GraphTable& graphTable);
+		~Project3();
 
 		void Update(Window& window, Camera& camera, const float& dt) override;
 		void UpdateUI() override;
@@ -15,7 +15,6 @@ class Project2 : public IProject
 		// Our Main Graph
 		Graph* m_MainGraph;
 		Graph* m_DraftLineGraph;
-		std::vector<Graph*> m_Shells;
 		DragPoint* m_ControlPoint_t;
 		float m_Current_t = 1.0f;
 		int m_Current_k = 1;

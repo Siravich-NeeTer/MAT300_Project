@@ -103,7 +103,7 @@ class DragPointController
 			//std::cout << mouseWorld.x << " , " << mouseWorld.y << " , " << mouseWorld.z << "\n";
 
 			glm::vec3 mouseWorld = ConvertMouseToWorldSpace(window, camera, ConvertMouseToNDC(window, glm::vec2(Input::mouseX, Input::mouseY)));
-			if (m_CurrentSelectedDragPoint && Input::IsKeyPressed(GLFW_MOUSE_BUTTON_LEFT))
+			if (m_CurrentSelectedDragPoint && Input::IsKeyPressed(GLFW_MOUSE_BUTTON_RIGHT))
 			{
 				m_CurrentSelectedDragPoint->isMove = true;
 				switch (m_CurrentDragType)

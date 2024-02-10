@@ -20,6 +20,7 @@
 
 #include "Project1.h"
 #include "Project2.h"
+#include "Project3.h"
 
 // Screen Size
 const int SCREEN_WIDTH = 800;
@@ -40,7 +41,7 @@ int main()
 {
 	srand(time(nullptr));
 
-	Window window(SCREEN_WIDTH, SCREEN_HEIGHT, "MAT300_Project_1");
+	Window window(SCREEN_WIDTH, SCREEN_HEIGHT, "MAT300_Project");
 	window.Init();
 
 	if (window.IsNull())
@@ -102,6 +103,11 @@ int main()
 		{
 			CleanBaseProject();
 			BaseProject = new Project2(graphTable);
+		}
+		if (ImGui::Button("Project 3"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project3(graphTable);
 		}
 		if (ImGui::CollapsingHeader("Graph Table Component"))
 		{

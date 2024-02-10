@@ -1,26 +1,26 @@
-#include "Project2.h"
+#include "Project3.h"
 
-Project2::Project2(GraphTable& graphTable)
+Project3::Project3(GraphTable& graphTable)
 	: IProject(graphTable)
-{
+{ 
 	// Init GraphTable
-	graphTable.InitTable(GraphTable::TableType::XY_TABLE, { -10.0f, 10.0f }, {-10.0f, 10.0f});
+	graphTable.InitTable(GraphTable::TableType::XY_TABLE, { -10.0f, 10.0f }, { -10.0f, 10.0f });
 	m_CurrentGraphMethod = GRAPH_METHOD::BB;
 
 	// Set DragPointController Type
 	m_RefDragPointController->SetDragType(DragPoint::DragType::DRAG_XY);
-	
+
 	// Initialize
 	InitGraph();
 	PlotGraph();
 }
-Project2::~Project2()
+Project3::~Project3()
 {
 	m_RefGraphTable->RemoveGraph(m_MainGraph);
 	m_RefDragPointController->ClearAllDragPoint();
 }
 
-void Project2::Update(Window& window, Camera& camera, const float& dt)
+void Project3::Update(Window& window, Camera& camera, const float& dt)
 {
 	// If ControlPoints is empty (degree = 0) -> no need to update
 	if (m_ControlPoints.empty())
@@ -48,7 +48,7 @@ void Project2::Update(Window& window, Camera& camera, const float& dt)
 
 	UpdateUI();
 }
-void Project2::UpdateUI()
+void Project3::UpdateUI()
 {
 	ImGui::Begin("Project_2");
 
@@ -56,7 +56,7 @@ void Project2::UpdateUI()
 	std::stringstream mousePos, curPos, tPos;
 	mousePos << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x << ',' << m_CurrentMousePosition.y;
 	ImGui::Text(std::string("Mouse Position: (" + mousePos.str() + ")").c_str());
-	
+
 	curPos << std::fixed << std::setprecision(3) << m_ControlPoint_t->position.x << ',' << m_ControlPoint_t->position.y;
 	tPos << std::fixed << "(t = " << std::setprecision(3) << m_Current_t << ")";
 	ImGui::Text(std::string("Current Position " + tPos.str() + ": (" + curPos.str() + ")").c_str());
@@ -149,7 +149,7 @@ void Project2::UpdateUI()
 	ImGui::End();
 }
 
-void Project2::InitGraph()
+void Project3::InitGraph()
 {
 	// Add new Graph
 	m_DraftLineGraph = m_RefGraphTable->AddGraph("Bezier Line", { 1.0f, 0.0f, 0.0f });
@@ -168,7 +168,7 @@ void Project2::InitGraph()
 	m_ControlPoint_t = m_RefDragPointController->AddDragPoint(m_ControlPoints[0]->position, glm::vec3(1.0f, 0.0f, 1.0f));
 	m_RefDragPointController->SetDragType(DragPoint::DragType::DRAG_XY);
 }
-void Project2::PlotGraph()
+void Project3::PlotGraph()
 {
 	// Clear existing Graph first
 	m_DraftLineGraph->Clear();
@@ -208,27 +208,6 @@ void Project2::PlotGraph()
 		{
 			m_MainGraph->Plot(NestedLinearInterpolation(positionList, t));
 		}
-		std::vector<std::vector<glm::vec2>> shellsList;
-		NestedLinearInterpolation(positionList, m_Current_t, shellsList);
-		// If ShellList > currentShell Graph
-		while (shellsList.size() > m_Shells.size())
-		{
-			m_Shells.push_back(m_RefGraphTable->AddGraph("Shell " + std::to_string(m_Shells.size() + 1), {1.0f, 0.0f, 1.0f}));
-		}
-		// If ShellList < currentShell Graph
-		for (int i = m_Shells.size(); i > shellsList.size(); i--)
-		{
-			m_Shells[i - 1]->SetActive(false);
-		}
-		for (int i = 0; i < shellsList.size(); i++)
-		{
-			m_Shells[i]->Clear();
-			m_Shells[i]->SetActive(true);
-			for (int j = 0; j < shellsList[i].size(); j++)
-			{
-				m_Shells[i]->Plot(shellsList[i][j]);
-			}
-		}
 	}
 	// Using Mid Point Method
 	else if (m_CurrentGraphMethod == GRAPH_METHOD::MID_POINT)
@@ -239,7 +218,7 @@ void Project2::PlotGraph()
 		{
 			positionList[i] = m_ControlPoints[i]->position;
 		}
-		
+
 		positionList = MidPointSubDivision(positionList, m_Current_k);
 
 		for (int i = 0; i < std::max((int)((positionList.size() - 1) * m_Current_t + 1), 1); i++)
@@ -250,7 +229,7 @@ void Project2::PlotGraph()
 	m_ControlPoint_t->position = m_MainGraph->GetPointList().back();
 }
 
-int* Project2::UpdateDegree()
+int* Project3::UpdateDegree()
 {
 	while (degree > m_ControlPoints.size() - 1)
 		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f, 0.0f), m_ControlPoints[0]->color));

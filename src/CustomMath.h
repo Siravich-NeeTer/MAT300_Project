@@ -22,3 +22,7 @@ float BernsteinPolynomial(int i, int degree, float t);
 // NLI Method
 float NestedLinearInterpolation(std::vector<float> coefficientList, float t);
 glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t);
+glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t, std::vector<std::vector<glm::vec2>>& shellPosition);
+// Mid Point (Divide-Conquer)
+std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList);
+std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList, int division);
