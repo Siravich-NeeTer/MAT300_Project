@@ -13,7 +13,8 @@ enum GRAPH_METHOD
 {
 	BB,			// Berstein Polynomials
 	NLI,		// Nested Linear Interpolation
-	MID_POINT
+	MID_POINT,
+	NONE
 };
 
 // Interface class for Project

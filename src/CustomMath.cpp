@@ -151,3 +151,100 @@ std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positio
 	result.insert(result.end(), right.begin(), right.end());
 	return result;
 }
+
+double NewtonForm(const std::vector<glm::vec2>& positionList, float t, NewtonFormType type)
+{
+	int degree = positionList.size() - 1;
+	std::vector<double> resultCoeffList;
+	std::vector<double> currentCoeffList;
+	for (int i = 0; i <= degree; i++)
+	{
+		if(type == NewtonFormType::X)
+			currentCoeffList.push_back(positionList[i].x);
+		else
+			currentCoeffList.push_back(positionList[i].y);
+	}
+
+	resultCoeffList.push_back(type == NewtonFormType::X ? positionList[0].x : positionList[0].y);
+	for (int i = 0; i <= degree; i++)
+	{
+		std::vector<double> tmp(degree - i);
+		for (int j = 0; j < degree - i; j++)
+		{
+			tmp[j] = (currentCoeffList[j + 1] - currentCoeffList[j]) / (i + 1);
+
+			if(j == 0)
+				resultCoeffList.push_back(tmp[j]);
+			//if (t >= 0.999f)
+			//	std::cout << "[" << j << "," << j+1 << "] : " << resultCoeffList.size() << " : " << tmp[j] << " ";
+		}
+
+		//if (t >= 0.999f)
+			//std::cout << "\n";
+		currentCoeffList = tmp;
+	}
+
+	double result = 0.0f;
+	for (int i = 0; i <= degree; i++)
+	{
+		double tmp = resultCoeffList[i];
+		for (int j = 0; j < i; j++)
+		{
+			tmp *= (t - j);
+		}
+		result += tmp;
+	}
+
+	return result;
+}
+
+void InitNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable)
+{
+	int degree = positionList.size() - 1;
+	std::vector<double> currentCoeffList;
+	coeffTable.resize(degree + 1);
+	for (int i = 0; i <= degree; i++)
+	{
+		if (type == NewtonFormType::X)
+			currentCoeffList.push_back(positionList[i].x);
+		else
+			currentCoeffList.push_back(positionList[i].y);
+	}
+
+	for (int i = 0; i <= degree; i++)
+	{
+		std::vector<double> tmp(degree - i + 1);
+		if (i == 0)
+		{
+			for (int j = 0; j <= degree; j++)
+			{
+				tmp[j] = currentCoeffList[j];
+			}
+		}
+		else
+		{
+			for (int j = 0; j <= degree - i; j++)
+			{
+				tmp[j] = (currentCoeffList[j + 1] - currentCoeffList[j]) / i;
+			}
+		}
+
+		currentCoeffList = tmp;
+		coeffTable[i] = tmp;
+	}
+}
+double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable)
+{
+	int degree = coeffTable[0].size() - 1;
+	double result = 0.0f;
+	for (int i = 0; i <= degree; i++)
+	{
+		double tmp = coeffTable[i][0];
+		for (int j = 0; j < i; j++)
+		{
+			tmp *= (t - j);
+		}
+		result += tmp;
+	}
+	return result;
+}
