@@ -152,57 +152,17 @@ std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positio
 	return result;
 }
 
-double NewtonForm(const std::vector<glm::vec2>& positionList, float t, NewtonFormType type)
+void CreateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable)
 {
+	// Set Degree
 	int degree = positionList.size() - 1;
-	std::vector<double> resultCoeffList;
+
 	std::vector<double> currentCoeffList;
-	for (int i = 0; i <= degree; i++)
-	{
-		if(type == NewtonFormType::X)
-			currentCoeffList.push_back(positionList[i].x);
-		else
-			currentCoeffList.push_back(positionList[i].y);
-	}
-
-	resultCoeffList.push_back(type == NewtonFormType::X ? positionList[0].x : positionList[0].y);
-	for (int i = 0; i <= degree; i++)
-	{
-		std::vector<double> tmp(degree - i);
-		for (int j = 0; j < degree - i; j++)
-		{
-			tmp[j] = (currentCoeffList[j + 1] - currentCoeffList[j]) / (i + 1);
-
-			if(j == 0)
-				resultCoeffList.push_back(tmp[j]);
-			//if (t >= 0.999f)
-			//	std::cout << "[" << j << "," << j+1 << "] : " << resultCoeffList.size() << " : " << tmp[j] << " ";
-		}
-
-		//if (t >= 0.999f)
-			//std::cout << "\n";
-		currentCoeffList = tmp;
-	}
-
-	double result = 0.0f;
-	for (int i = 0; i <= degree; i++)
-	{
-		double tmp = resultCoeffList[i];
-		for (int j = 0; j < i; j++)
-		{
-			tmp *= (t - j);
-		}
-		result += tmp;
-	}
-
-	return result;
-}
-
-void InitNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable)
-{
-	int degree = positionList.size() - 1;
-	std::vector<double> currentCoeffList;
+	// Clear coeffTable & Set size
+	coeffTable.clear();
 	coeffTable.resize(degree + 1);
+
+	// Set Value on first layer
 	for (int i = 0; i <= degree; i++)
 	{
 		if (type == NewtonFormType::X)
@@ -211,6 +171,7 @@ void InitNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormT
 			currentCoeffList.push_back(positionList[i].y);
 	}
 
+	// Each layer interpolate and push into coeffTable
 	for (int i = 0; i <= degree; i++)
 	{
 		std::vector<double> tmp(degree - i + 1);
@@ -233,16 +194,69 @@ void InitNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormT
 		coeffTable[i] = tmp;
 	}
 }
-double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable)
+void UpdateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable, const std::vector<int>& tList, int startUpdateFromIndex)
 {
+	// Set Degree
+	int degree = positionList.size() - 1;
+
+	// If Size of CoefficientTable < degree + 1 -> Allocate More Memory
+	if (coeffTable.size() < degree + 1)
+		coeffTable.resize(degree + 1);
+
+	// If Size of CoefficientTable > degree + 1 -> pop the exceed coefficient
+	while (coeffTable.size() > degree + 1)
+	{
+		for (int i = 0; i < coeffTable.size(); i++)
+			coeffTable[i].pop_back();
+		coeffTable.pop_back();
+	}
+
+	// Update the newValue from [startUpdateFromIndex, degree]
+	for (int i = startUpdateFromIndex; i <= degree; i++)
+	{
+		if (type == NewtonFormType::X)
+		{
+			if (i < coeffTable[0].size())
+				coeffTable[0][i] = positionList[i].x;
+			else
+				coeffTable[0].push_back(positionList[i].x);
+		}
+		else
+		{
+			if (i < coeffTable[0].size())
+				coeffTable[0][i] = positionList[i].y;
+			else
+				coeffTable[0].push_back(positionList[i].y);
+		}
+	}
+
+	// Start interpolating value
+	for (int i = 1; i <= degree; i++)
+	{
+		for (int j = std::max(startUpdateFromIndex - i, 0); j <= degree - i; j++)
+		{
+			if (j < coeffTable[i].size())
+				coeffTable[i][j] = (coeffTable[i - 1][j + 1] - coeffTable[i - 1][j]) / (tList[j + i] - tList[j]);
+			else
+				coeffTable[i].push_back((coeffTable[i - 1][j + 1] - coeffTable[i - 1][j]) / (tList[j + i] - tList[j]));
+		}
+	}
+}
+double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable, const std::vector<int>& tList)
+{
+	// Set Degree 
 	int degree = coeffTable[0].size() - 1;
+
+	// Create result for returning value
 	double result = 0.0f;
+	// Loop through all first element of each layer 
 	for (int i = 0; i <= degree; i++)
 	{
 		double tmp = coeffTable[i][0];
+		// Loop (t - t0)(t - t1) ... (t - tn)
 		for (int j = 0; j < i; j++)
 		{
-			tmp *= (t - j);
+			tmp *= (t - tList[j]);
 		}
 		result += tmp;
 	}

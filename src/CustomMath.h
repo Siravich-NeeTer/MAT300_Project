@@ -28,10 +28,15 @@ glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t
 std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList);
 std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList, int division);
 // Newton Form
+// -Use double variable type since when we substitute there are a chance that can overflow (in case)
+// -- p(t) = [...]g + [...]gt + [...]gt(t-1) + ... + [...]g(t!)
 enum NewtonFormType
 {
 	X, Y
 };
-double NewtonForm(const std::vector<glm::vec2>& positionList, float t, NewtonFormType type);
-void InitNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable);
-double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable);
+// -CreateNewtonForm use when initialize the graph
+void CreateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable);
+// -Update use when drag point or add/remove point
+void UpdateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable, const std::vector<int>& tList, int startUpdateFromIndex = 0);
+// -Use the find final value aka. interpolated with t
+double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable, const std::vector<int> &tList);

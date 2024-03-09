@@ -26,12 +26,15 @@ void Project3::Update(Window& window, Camera& camera, const float& dt)
 	if (m_ControlPoints.empty())
 		return;
 
+	isPointMove = false;
 	for (int idx = 0; idx < m_ControlPoints.size(); idx++)
 	{
 		// If one of ControlPoints move -> Update entire graph
 		if (m_ControlPoints[idx]->isMove)
 		{
 			// Plot new one
+			isPointMove = true;
+			pointMoveIndex = idx;
 			PlotGraph();
 		}
 	}
@@ -62,11 +65,11 @@ void Project3::UpdateUI()
 	ImGui::Text(std::string("Current Position " + tPos.str() + ": (" + curPos.str() + ")").c_str());
 	// --------------------------------------------------------------
 
-	if (ImGui::DragInt("Degree", &degree, 1, 1, 20)) { UpdateDegree(); }
+	ImGui::Text(std::string("Degree : " + std::to_string(degree)).c_str());
 	ImGui::SameLine();
-	if (ImGui::SmallButton("+")) { if (degree < 20) { degree++; } UpdateDegree(); }
+	if (ImGui::SmallButton("-")) { if (degree > 1) { degree--; } UpdateDegree(); PlotGraph(); }
 	ImGui::SameLine();
-	if (ImGui::SmallButton("-")) { if (degree > 1) { degree--; } UpdateDegree(); }
+	if (ImGui::SmallButton("+")) { if (degree < 20) { degree++; } UpdateDegree(); PlotGraph(); }
 
 
 	if (ImGui::SliderFloat("t", &m_Current_t, 0.0f, 1.0f))
@@ -84,6 +87,12 @@ void Project3::UpdateUI()
 	if (ImGui::Checkbox("Hide Polyline", &isHidePolyLine))
 	{
 		m_DraftLineGraph->SetActive(!isHidePolyLine);
+	}
+	if (ImGui::Checkbox("Optimize", &isOptimize))
+	{
+		// Optimize
+		// - When Point Move -> Update only that index and lower
+		// - When Add New Point -> Add one point to table aka. other value still same
 	}
 
 	// ---------------------- Graphing Method -----------------------
@@ -143,23 +152,73 @@ void Project3::PlotGraph()
 		m_DraftLineGraph->Plot(m_ControlPoints[i]->position);
 	}
 
-	std::vector<glm::vec2> positionList(degree + 1);
-	// Update Coefficients (aka. Base) to std::vector 
-	for (int i = 0; i <= degree; i++)
+	while (m_PositionList.size() < m_ControlPoints.size())
 	{
-		positionList[i] = m_ControlPoints[i]->position;
+		int idx = m_PositionList.size();
+		m_PositionList.push_back(m_ControlPoints[idx]->position);
+		m_ti.push_back(m_ti.size());
+	}
+	while (m_PositionList.size() > m_ControlPoints.size())
+	{
+		auto it = std::find(m_ti.begin(), m_ti.end(), m_PositionList.size() - 1);
+		int idx = it - m_ti.begin();
+		m_PositionList.erase(m_PositionList.begin() + idx);
+		m_ti.erase(it);
 	}
 
-	InitNewtonFormTable(positionList, NewtonFormType::X, m_CoeffTable_X);
-	InitNewtonFormTable(positionList, NewtonFormType::Y, m_CoeffTable_Y);
+	if (isPointMove)
+	{
+		if (m_ti.back() != pointMoveIndex)
+			m_PositionList[pointMoveIndex] = m_ControlPoints[pointMoveIndex]->position;
+		else
+			m_PositionList.back() = m_ControlPoints[pointMoveIndex]->position;
+	}
+
+	// If Table is Empty -> Start Create Table
+	if (m_CoeffTable_X.empty() && m_CoeffTable_Y.empty())
+	{
+		CreateNewtonFormTable(m_PositionList, NewtonFormType::X, m_CoeffTable_X);
+		CreateNewtonFormTable(m_PositionList, NewtonFormType::Y, m_CoeffTable_Y);
+	}
+	else if(isOptimize)
+	{
+		// Move Interpolate Point
+		if (isPointMove)
+		{
+			if (m_ti.back() != pointMoveIndex)
+			{
+				std::swap(m_PositionList[pointMoveIndex], m_PositionList.back());
+				std::swap(m_ti[pointMoveIndex], m_ti.back());
+				UpdateNewtonFormTable(m_PositionList, NewtonFormType::X, m_CoeffTable_X, m_ti, glm::clamp(pointMoveIndex - 1, 0, degree));
+				UpdateNewtonFormTable(m_PositionList, NewtonFormType::Y, m_CoeffTable_Y, m_ti, glm::clamp(pointMoveIndex - 1, 0, degree));
+			}
+			else
+			{
+				UpdateNewtonFormTable(m_PositionList, NewtonFormType::X, m_CoeffTable_X, m_ti, degree);
+				UpdateNewtonFormTable(m_PositionList, NewtonFormType::Y, m_CoeffTable_Y, m_ti, degree);
+			}
+		}
+		// Create New Point
+		else
+		{
+			UpdateNewtonFormTable(m_PositionList, NewtonFormType::X, m_CoeffTable_X, m_ti, degree);
+			UpdateNewtonFormTable(m_PositionList, NewtonFormType::Y, m_CoeffTable_Y, m_ti, degree);
+		}
+	}
+	else
+	{
+		UpdateNewtonFormTable(m_PositionList, NewtonFormType::X, m_CoeffTable_X, m_ti);
+		UpdateNewtonFormTable(m_PositionList, NewtonFormType::Y, m_CoeffTable_Y, m_ti);
+	}
+
 	for (float t = 0.0f; t <= m_Current_t * degree; t += (degree / 1000.0f))
 	{
-		double x = SubstituteNewtonForm(t, m_CoeffTable_X);
-		double y = SubstituteNewtonForm(t, m_CoeffTable_Y);
+		double x = SubstituteNewtonForm(t, m_CoeffTable_X, m_ti);
+		double y = SubstituteNewtonForm(t, m_CoeffTable_Y, m_ti);
 
 		m_MainGraph->Plot({ x, y });
 	}
-	m_MainGraph->Plot({ SubstituteNewtonForm(m_Current_t * degree, m_CoeffTable_X), SubstituteNewtonForm(m_Current_t * degree, m_CoeffTable_Y) });
+	m_MainGraph->Plot({ SubstituteNewtonForm(m_Current_t * degree, m_CoeffTable_X, m_ti), SubstituteNewtonForm(m_Current_t * degree, m_CoeffTable_Y, m_ti) });
 
 	m_ControlPoint_t->position = m_MainGraph->GetPointList().back();
 }
@@ -173,8 +232,6 @@ int* Project3::UpdateDegree()
 		m_RefDragPointController->RemoveDragPoint(m_ControlPoints.back());
 		m_ControlPoints.pop_back();
 	}
-
-	PlotGraph();
 
 	return &degree;
 }

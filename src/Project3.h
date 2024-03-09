@@ -21,8 +21,14 @@ class Project3 : public IProject
 		int m_Current_k = 1;
 		std::vector<std::vector<double>> m_CoeffTable_X;
 		std::vector<std::vector<double>> m_CoeffTable_Y;
+		
+		std::vector<glm::vec2> m_PositionList;
+		std::vector<int> m_ti;
 
 		bool isHidePolyLine = false;
+		bool isOptimize = false;
+		bool isPointMove = false;
+		int pointMoveIndex = 0;
 
 		void InitGraph();
 		void PlotGraph();
