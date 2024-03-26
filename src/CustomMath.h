@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include <glm/glm.hpp>
+#include <Eigen/Dense>
 
 class Pascal
 {
@@ -40,3 +41,9 @@ void CreateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFor
 void UpdateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFormType type, std::vector<std::vector<double>>& coeffTable, const std::vector<int>& tList, int startUpdateFromIndex = 0);
 // -Use the find final value aka. interpolated with t
 double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable, const std::vector<int> &tList);
+
+
+// Interpolating Cubic Spline
+float Truncate(float t, float c, int p);
+Eigen::MatrixXf InterpolatingCubic(const std::vector<glm::vec2>& positionList);
+float SolveInterpolationCubic(const Eigen::VectorXf& resultCoeff, float t);

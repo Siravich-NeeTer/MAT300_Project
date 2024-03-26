@@ -262,3 +262,77 @@ double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTabl
 	}
 	return result;
 }
+
+float Truncate(float t, float c, int p)
+{
+	if (t < c)
+		return 0.0f;
+	else
+	{
+		// No use "pow" since the power(p) is an int
+		float result = 1.0f;
+		float t_c = t - c;
+		for (int i = 0; i < p; i++)
+		{
+			result *= t_c;
+		}
+		return result;
+	}
+}
+Eigen::MatrixXf InterpolatingCubic(const std::vector<glm::vec2>& positionList)
+{
+	size_t n = positionList.size();
+	// Declare Matrix[n + 2][n + 2] since we have free coefficient
+	Eigen::MatrixXf coeff(n + 2, n + 2);
+	for (int t = 0; t < n; t++)
+	{
+		for (int i = 0; i < n + 2; i++)
+		{
+			// Standard Basis
+			if (i < 4)
+				coeff(t, i) = pow(t, i);
+			// Truncated Basis
+			else
+				// i - 3 to make sure it start at 1
+				coeff(t, i) = Truncate(t, i - 3, 3);
+		}
+	}
+
+	int freeCoeff[] = { 0, n };
+	for (int idx = 0; idx < 2; idx++)
+	{
+		int t = freeCoeff[idx];
+		for (int i = 0; i < n + 2; i++)
+		{
+			switch (i)
+			{
+				// 2nd Derivative of Standard Basis
+				case 0: coeff(n + idx, i) = 0.0f; break;
+				case 1: coeff(n + idx, i) = 0.0f; break;
+				case 2: coeff(n + idx, i) = 2.0f; break;
+				case 3: coeff(n + idx, i) = 6.0f * t; break;
+				// 2nd Derivative of Truncated Basis
+				// i - 3 to make sure it start at 1
+				default: coeff(n + idx, i) = 6.0f * Truncate(t, i - 3, 1); break;
+			}
+		}
+	}
+
+	//std::cout << coeff << "\n";
+	return coeff;
+}
+float SolveInterpolationCubic(const Eigen::VectorXf& resultCoeff, float t)
+{
+	float result = 0.0f;
+	for (int i = 0; i < resultCoeff.size(); i++)
+	{
+		// Standard Basis
+		if (i < 4)
+			result += resultCoeff(i) * pow(t, i);
+		// Truncated Basis
+		else
+			// i - 3 to make sure it start at 1
+			result += resultCoeff(i) * Truncate(t, i - 3, 3);
+	}
+	return result;
+}
