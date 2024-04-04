@@ -129,6 +129,7 @@ class GraphTable
 		void SetTextActive(bool active);
 
 		float GetTableScale() const { return tScale; }
+		Text* GetTextFromIndex(int index) { return m_TextGraphList[index]; }
 		bool& IsHideText() { return m_IsHideText; }
 
 	private:

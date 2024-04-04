@@ -171,6 +171,7 @@
     <ClCompile Include="src\Project2.cpp" />
     <ClCompile Include="src\Project3.cpp" />
     <ClCompile Include="src\Project4.cpp" />
+    <ClCompile Include="src\Project5.cpp" />
     <ClCompile Include="src\Renderer\BaseShader.cpp" />
     <ClCompile Include="src\Renderer\ElementBufferObject.cpp" />
     <ClCompile Include="External Libraries\GLAD\src\glad.c" />
@@ -204,6 +205,7 @@
     <ClInclude Include="src\Project2.h" />
     <ClInclude Include="src\Project3.h" />
     <ClInclude Include="src\Project4.h" />
+    <ClInclude Include="src\Project5.h" />
     <ClInclude Include="src\Renderer\BaseShader.h" />
     <ClInclude Include="src\Renderer\ElementBufferObject.h" />
     <ClInclude Include="External Libraries\stb\stb_image.h" />

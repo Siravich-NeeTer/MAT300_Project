@@ -14,6 +14,9 @@ enum GRAPH_METHOD
 	BB,			// Berstein Polynomials
 	NLI,		// Nested Linear Interpolation
 	MID_POINT,
+	DE_BOOR,
+	DIVIDED_DIFFERENCE,
+	CRAMMERS,
 	NONE
 };
 
@@ -55,6 +58,10 @@ class IProject
 				case GRAPH_METHOD::BB: return "BB";
 				case GRAPH_METHOD::NLI: return "NLI";
 				case GRAPH_METHOD::MID_POINT: return "MID POINT";
+				case GRAPH_METHOD::DE_BOOR: return "DE BOOR";
+				case GRAPH_METHOD::DIVIDED_DIFFERENCE: return "DIVIDED DIFFERENCES";
+				case GRAPH_METHOD::CRAMMERS: return "CRAMMERS RULE";
+				case GRAPH_METHOD::NONE: return "NONE";
 			}
 		}
 };

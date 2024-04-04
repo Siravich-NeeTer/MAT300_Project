@@ -263,15 +263,15 @@ double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTabl
 	return result;
 }
 
-float Truncate(float t, float c, int p)
+double Truncate(double t, double c, int p)
 {
 	if (t < c)
 		return 0.0f;
 	else
 	{
 		// No use "pow" since the power(p) is an int
-		float result = 1.0f;
-		float t_c = t - c;
+		double result = 1.0f;
+		double t_c = t - c;
 		for (int i = 0; i < p; i++)
 		{
 			result *= t_c;
@@ -335,4 +335,65 @@ float SolveInterpolationCubic(const Eigen::VectorXf& resultCoeff, float t)
 			result += resultCoeff(i) * Truncate(t, i - 3, 3);
 	}
 	return result;
+}
+
+float NestedLinearInterpolation_DeBoor(std::vector<float> coefficientList, float t, int degree, int N)
+{
+	int J = std::floor(t);
+
+	for (int p = 1; p <= degree; p++)
+	{
+		std::vector<float> currentCoefficientList(N - degree + 1);
+		for (int i = J - degree + p; i <= J; i++)
+		{
+			// Calculate new Coefficients using previous coefficients
+			currentCoefficientList[i] = ((t - i) / (degree - p + 1)) * coefficientList[i] + ((i + degree - p + 1 - t) / (degree - p + 1)) * coefficientList[i - 1];
+		}
+		coefficientList = currentCoefficientList;
+	}
+	return coefficientList[J];
+}
+float DividedDifference_BSpline(float t, int degree, int N, int i)
+{
+	std::vector<double> coefficientList;
+	for (int val = i; val <= i + degree + 1; val++)
+	{
+		coefficientList.push_back(Truncate(t, val, degree));
+	}
+
+	for (int j = 1; j <= degree + 1; j++)
+	{
+		std::vector<double> currentCoefficientList;
+		for (int k = 0; k < coefficientList.size() - 1; k++)
+		{
+			currentCoefficientList.push_back((coefficientList[k + 1] - coefficientList[k]) / j);
+		}
+		coefficientList = currentCoefficientList;
+	}
+	return ((degree + 1) & 1 ? -1.0f : 1.0f) * (degree + 1) * coefficientList[0];
+}
+float Cramer_BSpline(float t, int degree, int N, int i)
+{
+	Eigen::MatrixXd shiftedPowerCoeff(degree + 2, degree + 2);
+	for (int row = 0; row < degree + 2; row++)
+	{
+		for (int col = 0; col < degree + 2; col++)
+		{
+			if(col < degree + 1)
+				shiftedPowerCoeff(row, col) = std::powf(i + row, col);
+			else
+				shiftedPowerCoeff(row, col) = Truncate(t, i + row, degree);
+		}
+	}
+
+	Eigen::MatrixXd D(degree + 2, degree + 2);
+	for (int row = 0; row < degree + 2; row++)
+	{
+		for (int col = 0; col < degree + 2; col++)
+		{
+			D(row, col) = std::powf(i + row, col);
+		}
+	}
+
+	return ((degree + 1) & 1 ? -1.0f : 1.0f) * (degree + 1) * (1.0f / D.determinant()) * shiftedPowerCoeff.determinant();
 }

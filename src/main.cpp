@@ -22,6 +22,7 @@
 #include "Project2.h"
 #include "Project3.h"
 #include "Project4.h"
+#include "Project5.h"
 
 // Screen Size
 const int SCREEN_WIDTH = 800;
@@ -115,6 +116,12 @@ int main()
 			CleanBaseProject();
 			BaseProject = new Project4(graphTable);
 		}
+		if (ImGui::Button("Project 5"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project5(graphTable);
+		}
+
 		if (ImGui::CollapsingHeader("Graph Table Component"))
 		{
 			if (ImGui::Checkbox("Hide Text", &graphTable.IsHideText()))

@@ -42,8 +42,12 @@ void UpdateNewtonFormTable(const std::vector<glm::vec2>& positionList, NewtonFor
 // -Use the find final value aka. interpolated with t
 double SubstituteNewtonForm(float t, std::vector<std::vector<double>>& coeffTable, const std::vector<int> &tList);
 
-
 // Interpolating Cubic Spline
-float Truncate(float t, float c, int p);
+double Truncate(double t, double c, int p);
 Eigen::MatrixXf InterpolatingCubic(const std::vector<glm::vec2>& positionList);
 float SolveInterpolationCubic(const Eigen::VectorXf& resultCoeff, float t);
+
+// B-Spline Function
+float NestedLinearInterpolation_DeBoor(std::vector<float> coefficientList, float t, int degree, int N);
+float DividedDifference_BSpline(float t, int degree, int N, int i);
+float Cramer_BSpline(float t, int degree, int N, int i);
