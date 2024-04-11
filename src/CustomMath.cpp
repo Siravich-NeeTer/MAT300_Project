@@ -397,3 +397,38 @@ float Cramer_BSpline(float t, int degree, int N, int i)
 
 	return ((degree + 1) & 1 ? -1.0f : 1.0f) * (degree + 1) * (1.0f / D.determinant()) * shiftedPowerCoeff.determinant();
 }
+
+glm::vec2 PolarForm(const std::vector<glm::vec2>& basePoint, const std::vector<float>& coefficientList, int startIdx, int endIdx)
+{
+	std::vector<glm::vec2> points(basePoint);
+	size_t degree = basePoint.size() - 1;
+	for (size_t i = 0; i < degree; i++)
+	{
+		float u = coefficientList[startIdx + i];
+		std::vector<glm::vec2> curPoints;
+		for (size_t j = 0; j < points.size() - 1; j++)
+		{
+			glm::vec2 p = (1.0f - u) * points[j] + u * points[j + 1];
+			curPoints.push_back(p);
+		}
+		points = curPoints;
+	}
+	return points.back();
+}
+glm::vec2 NestedLinearInterpolation_DeBoor(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, float t)
+{
+	std::vector<glm::vec2> points(basePoint);
+	size_t degree = basePoint.size() - 1;
+	for (size_t p = 1; p <= degree; p++)
+	{
+		std::vector<glm::vec2> curPoints(degree + 1);
+		for (size_t i = p; i <= degree; i++)
+		{
+			float ti = coefficientList[i];
+			float t_idp = coefficientList[i + degree - (p - 1)];
+			curPoints[i] = (((t - ti) / (t_idp - ti)) * points[i] + ((t_idp - t) / (t_idp - ti)) * points[i - 1]);
+		}
+		points = curPoints;
+	}
+	return points[degree];
+}
