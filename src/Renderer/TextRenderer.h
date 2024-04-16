@@ -30,7 +30,7 @@ class Text
 {
 	public:
 		std::string text;
-		glm::vec2 position;
+		glm::vec3 position;
 		float fontsize;
 		glm::vec3 color;
 		bool active = true;
@@ -38,7 +38,12 @@ class Text
 		float verticalOffset;
 	
 		Text(const std::string& _text, const glm::vec2& _position, const float& _fontsize, const glm::vec3& _color, const float& _verticalOffset = 0)
-			: text(_text), position(_position), fontsize(_fontsize), color(_color), 
+			: text(_text), position(glm::vec3(_position, 0.0f)), fontsize(_fontsize), color(_color), 
+			verticalOffset(_verticalOffset), isVerticalOffsetAssign(false)
+		{
+		}
+		Text(const std::string& _text, const glm::vec3& _position, const float& _fontsize, const glm::vec3& _color, const float& _verticalOffset = 0)
+			: text(_text), position(_position), fontsize(_fontsize), color(_color),
 			verticalOffset(_verticalOffset), isVerticalOffsetAssign(false)
 		{
 		}

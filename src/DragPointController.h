@@ -19,14 +19,19 @@ struct DragPoint
 		NONE, DRAG_X, DRAG_Y, DRAG_XY
 	};
 
-	glm::vec2 position;
+	glm::vec3 position;
 	glm::vec3 color;
 	bool isMove;
 	bool isActive;
 	bool isSelect;
 	DragType dragType;
 
-	DragPoint(const glm::vec2& _position, const glm::vec3& _color, const DragType &_dragType)
+	DragPoint(const glm::vec2& _position, const glm::vec3& _color, const DragType& _dragType)
+		: position(glm::vec3(_position.x, _position.y, 0.0f)), color(_color), dragType(_dragType), isMove(false), isActive(true), isSelect(false)
+	{
+	}
+
+	DragPoint(const glm::vec3& _position, const glm::vec3& _color, const DragType &_dragType)
 		: position(_position), color(_color), dragType(_dragType), isMove(false), isActive(true), isSelect(false)
 	{
 	}
@@ -129,7 +134,7 @@ class DragPointController
 				if (!m_DragPoints[i]->isActive || m_DragPoints[i]->dragType == DragPoint::DragType::NONE)
 					continue;
 
-				if (glm::distance(glm::vec2(mouseWorld), m_DragPoints[i]->position) < 0.03f * (m_PointSize / 100.0f))
+				if (glm::distance(glm::vec3(mouseWorld.x, mouseWorld.y, 0.0f), m_DragPoints[i]->position) < 0.03f * (m_PointSize / 100.0f))
 				{
 					m_DragPoints[i]->color = { 0.0f, 1.0f, 1.0f };
 					m_CurrentSelectedDragPoint = m_DragPoints[i];

@@ -25,6 +25,7 @@
 #include "Project5.h"
 #include "Project6.h"
 #include "Project7.h"
+#include "Project8.h"
 
 // Screen Size
 const int SCREEN_WIDTH = 800;
@@ -87,6 +88,16 @@ int main()
 			cam.ProcessMousesMovement();
 		cam.Input(dt);
 
+		if (Input::IsKeyBeginPressed(GLFW_KEY_LEFT_ALT) && dynamic_cast<Project8*>(BaseProject))
+		{
+			cam.ResetMousePosition();
+			isCameraMove = !isCameraMove;
+			if (isCameraMove)
+				glfwSetInputMode(window.GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			else
+				glfwSetInputMode(window.GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+
 		dragPointController->Update(window, cam, dt);
 		
 		if(BaseProject)
@@ -132,6 +143,11 @@ int main()
 		{
 			CleanBaseProject();
 			BaseProject = new Project7(graphTable);
+		}
+		if (ImGui::Button("Project 8"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project8(graphTable);
 		}
 
 		if (ImGui::CollapsingHeader("Graph Table Component"))

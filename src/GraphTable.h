@@ -21,11 +21,15 @@ class Graph
 			: name(_name), color(_color), thickness(4.0f)
 		{
 			m_Graph_VBO.Bind();
-			m_Graph_VBO.BufferData(m_PointsLimit * sizeof(glm::vec2), nullptr, true);
+			m_Graph_VBO.BufferData(m_PointsLimit * sizeof(glm::vec3), nullptr, true);
 			m_Graph_VBO.UnBind();
 		}
 
 		void Plot(const glm::vec2& pos)
+		{
+			Plot(glm::vec3(pos, 0.0f));
+		}
+		void Plot(const glm::vec3& pos)
 		{
 			m_Points.push_back(pos);
 
@@ -33,7 +37,7 @@ class Graph
 			{
 				m_PointsLimit *= 2;
 				m_Graph_VBO.Bind();
-				m_Graph_VBO.BufferData(m_PointsLimit * sizeof(glm::vec2), nullptr, true);
+				m_Graph_VBO.BufferData(m_PointsLimit * sizeof(glm::vec3), nullptr, true);
 			}
 			m_IsBind = false;
 		}
@@ -48,8 +52,8 @@ class Graph
 				m_Graph_VAO.Bind();
 				m_Graph_VBO.Bind();
 
-				m_Graph_VBO.BufferSubData(0, sizeof(glm::vec2) * m_Points.size(), m_Points.data());
-				m_Graph_VAO.Attribute(m_Graph_VBO, 0, 2, GL_FLOAT, sizeof(glm::vec2), 0);
+				m_Graph_VBO.BufferSubData(0, sizeof(glm::vec3) * m_Points.size(), m_Points.data());
+				m_Graph_VAO.Attribute(m_Graph_VBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), 0);
 				m_IsBind = true;
 			}
 
@@ -85,7 +89,7 @@ class Graph
 		glm::vec3 &GetColor() { return color; }
 		float& GetThickness() { return thickness; }
 		bool& IsActive() { return m_Active; }
-		std::vector<glm::vec2>& GetPointList() { return m_Points; }
+		std::vector<glm::vec3>& GetPointList() { return m_Points; }
 
 		bool operator==(const Graph& lhs)
 		{
@@ -100,7 +104,7 @@ class Graph
 		VertexArrayObject m_Graph_VAO;
 		VertexBufferObject m_Graph_VBO;
 
-		std::vector<glm::vec2> m_Points;
+		std::vector<glm::vec3> m_Points;
 
 		int m_PointsLimit = 100;
 		bool m_HavePointsLimit = false;
@@ -138,7 +142,7 @@ class GraphTable
 		// -- Table
 		VertexArrayObject m_Table_VAO;
 		VertexBufferObject m_Table_VBO;
-		std::vector<glm::vec2> m_TableVertices;
+		std::vector<glm::vec3> m_TableVertices;
 		// -- Graph
 		std::vector<Graph*> m_Graphs;
 		// - Shader

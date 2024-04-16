@@ -203,7 +203,7 @@ void Project6::PlotGraph()
 
 	for (int i = 0; i <= degree; i++)
 	{
-		m_ControlPoints[i]->position = controlPoints_Q[i];
+		m_ControlPoints[i]->position = glm::vec3(controlPoints_Q[i], 0.0f);
 		m_DraftLineGraph->Plot(m_ControlPoints[i]->position);
 	}
 
@@ -213,7 +213,7 @@ void Project6::PlotGraph()
 		pos = NestedLinearInterpolation_DeBoor(controlPoints_Q, m_KnotSequence, t);
 		m_MainGraph->Plot(pos);
 	}
-	m_ControlPoint_t->position = pos;
+	m_ControlPoint_t->position = glm::vec3(pos, 0.0f);
 }
 
 int* Project6::UpdateDegree()

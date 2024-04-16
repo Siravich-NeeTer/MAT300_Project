@@ -19,5 +19,5 @@ glm::vec3 ConvertMouseToWorldSpace(const Window& window, const Camera& camera, c
 	mouseWorld = camera.GetPosition().z * mouseWorld;
 	mouseWorld = glm::vec4(camera.GetPosition().x, camera.GetPosition().y, 0.0f, 0.0f) + mouseWorld;
 
-	return glm::vec3(mouseWorld);
+	return glm::vec3(mouseWorld.x, mouseWorld.y, 0.0f);
 }

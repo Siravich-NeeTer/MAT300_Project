@@ -122,10 +122,12 @@ class Camera
 				m_Position += 5.0f * Input::scrollOffset * m_Front * velocity;
 
 			// TODO Remove Camera-Z-Pos Limit
+			/*
 			if (m_Position.z < 0.5f)
 				m_Position.z = 0.5f;
 			else if (m_Position.z > 10.0f)
 				m_Position.z = 10.0f;
+			*/
 
 			// Left/Right
 			if (Input::IsKeyPressed(GLFW_KEY_D))

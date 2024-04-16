@@ -202,7 +202,7 @@ int* Project5::UpdateDegree()
 	for (int i = 1; i <= N - degree; i++)
 	{
 		float progress = m_RefGraphTable->GetTableScale() / N;
-		m_ControlPoints[i - 1]->position = glm::vec2(((degree + 1) / 2.0f + (i - 1)) * progress, 1.0f);
+		m_ControlPoints[i - 1]->position = glm::vec3(((degree + 1) / 2.0f + (i - 1)) * progress, 1.0f, 0.0f);
 	}
 	m_MainGraph->Clear();
 	PlotGraph();

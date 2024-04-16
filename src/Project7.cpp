@@ -229,7 +229,7 @@ void Project7::PlotGraph()
 		pos = DeBoor_BSpline(positionList, m_KnotSequence, degree, t);
 		m_MainGraph->Plot(pos);
 	}
-	m_ControlPoint_t->position = pos;
+	m_ControlPoint_t->position = glm::vec3(pos, 0.0f);
 
 	if (isHideShell)
 		return;

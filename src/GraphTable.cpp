@@ -30,18 +30,18 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 
 	// Draw Base-Line
 	// - Vertical Line
-	m_TableVertices.push_back({ 0.0f, yMin - offset });
-	m_TableVertices.push_back({ 0.0f, yMax + offset });
+	m_TableVertices.push_back({ 0.0f, yMin - offset, 0.0f });
+	m_TableVertices.push_back({ 0.0f, yMax + offset, 0.0f });
 	// - Horizontal Line
 	if (tableType == TableType::YT_TABLE)
 	{
-		m_TableVertices.push_back({ -offset, 0.0f });
-		m_TableVertices.push_back({ tScale + offset, 0.0f });
+		m_TableVertices.push_back({ -offset, 0.0f, 0.0f });
+		m_TableVertices.push_back({ tScale + offset, 0.0f, 0.0f });
 	}
 	else
 	{
-		m_TableVertices.push_back({ xMin - offset, 0.0f });
-		m_TableVertices.push_back({ xMax + offset, 0.0f });
+		m_TableVertices.push_back({ xMin - offset, 0.0f, 0.0f });
+		m_TableVertices.push_back({ xMax + offset, 0.0f, 0.0f });
 	}
 
 	// Initialize Graph on Y-Axis
@@ -51,16 +51,16 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 			continue;
 
 		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { -0.2f, i }, 0.2f, { 1.0f, 0.0f, 0.0f }));
-		m_TableVertices.push_back({ -0.05f, i });
-		m_TableVertices.push_back({ 0.05f, i });
+		m_TableVertices.push_back({ -0.05f, i, 0.0f });
+		m_TableVertices.push_back({ 0.05f, i, 0.0f });
 	}
 	
 	// Initialize Graph on Horizontal
 	// - Initialize Graph on T-Axis
 	if (tableType == TableType::YT_TABLE)
 	{
-		m_TableVertices.push_back({ tScale, -0.05f });
-		m_TableVertices.push_back({ tScale,  0.05f });
+		m_TableVertices.push_back({ tScale, -0.05f, 0.0f });
+		m_TableVertices.push_back({ tScale,  0.05f, 0.0f });
 		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText("1", { 1 * tScale + offset, 0.0f }, 0.2f, { 1.0f, 0.0f, 0.0f }));
 	}
 	// - Initialize Graph on X-Axis
@@ -72,16 +72,16 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 				continue;
 
 			m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { i, -0.2f }, 0.2f, { 1.0f, 0.0f, 0.0f }));
-			m_TableVertices.push_back({ i, -0.05f });
-			m_TableVertices.push_back({ i, 0.05f });
+			m_TableVertices.push_back({ i, -0.05f, 0.0f });
+			m_TableVertices.push_back({ i, 0.05f, 0.0f });
 		}
 	}
 
 	// Bind with Buffer
 	m_Table_VAO.Bind();
-	m_Table_VBO.BufferData(2 * sizeof(float) * m_TableVertices.size(), m_TableVertices.data(), false);
+	m_Table_VBO.BufferData(3 * sizeof(float) * m_TableVertices.size(), m_TableVertices.data(), false);
 
-	m_Table_VAO.Attribute(m_Table_VBO, 0, 2, GL_FLOAT, 2 * sizeof(float), 0);
+	m_Table_VAO.Attribute(m_Table_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
 
 	m_Table_VBO.UnBind();
 }

@@ -97,7 +97,7 @@ void TextRenderer::RenderText(Window& window, Camera& camera)
             continue;
 
         m_TextShader.SetVec3("u_TextColor", text->color);
-        glm::vec2 pos = text->position;
+        glm::vec3 pos = text->position;
         float scale = text->fontsize / BASE_FONT_SIZE;
 
         if (!text->IsVerticalOffsetAssign())
@@ -119,7 +119,7 @@ void TextRenderer::RenderText(Window& window, Camera& camera)
             glActiveTexture(GL_TEXTURE0);
             glm::mat4 model = glm::mat4(1.0f);
 
-            model = glm::translate(glm::mat4(1.0f), glm::vec3(xpos + w / 2.0f, ypos + h / 2.0f - verticalOffset / 2.0f, 0.0f));
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(xpos + w / 2.0f, ypos + h / 2.0f - verticalOffset / 2.0f, pos.z));
             model *= glm::scale(glm::mat4(1.0f), glm::vec3(w, h, 1.0f));
             m_TextShader.SetMat4("u_Model", model);
 
