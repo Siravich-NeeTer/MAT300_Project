@@ -68,7 +68,7 @@ void Project7::Update(Window& window, Camera& camera, const float& dt)
 }
 void Project7::UpdateUI()
 {
-	ImGui::Begin("Project_6");
+	ImGui::Begin("Project_7");
 
 	// -------------------- Print Mouse Position --------------------
 	std::stringstream mousePos, curPos, tPos;
@@ -88,6 +88,8 @@ void Project7::UpdateUI()
 		sKnotSequence << m_KnotSequence[i];
 		if (i < m_KnotSequence.size() - 1)
 			sKnotSequence << ", ";
+		if (i > 0 && i % 7 == 0)
+			sKnotSequence << "\n";
 	}
 	sKnotSequence << "]";
 	ImGui::Text(sKnotSequence.str().c_str());
@@ -131,6 +133,10 @@ void Project7::UpdateUI()
 	{
 		m_DraftLineGraph->SetActive(!isHidePolyLine);
 	}
+	if (ImGui::Checkbox("Hide Shell", &isHideShell))
+	{
+		PlotGraph();
+	}
 
 	// ---------------------- Graphing Method -----------------------
 	if (ImGui::CollapsingHeader("Graph"))
@@ -147,7 +153,7 @@ void Project7::UpdateUI()
 	// ----------------------- Control Point ------------------------
 	if (ImGui::CollapsingHeader("Control Point"))
 	{
-		for (int i = 0; i <= degree; i++)
+		for (int i = 0; i < m_ControlPoints.size(); i++)
 		{
 			if (ImGui::SliderFloat2(std::string("P" + std::to_string(i)).c_str(), &m_ControlPoints[i]->position[0], -10.0f, 10.0f))
 			{
@@ -224,6 +230,9 @@ void Project7::PlotGraph()
 		m_MainGraph->Plot(pos);
 	}
 	m_ControlPoint_t->position = pos;
+
+	if (isHideShell)
+		return;
 
 	float epsilon = 0.001f;
 	std::vector<std::vector<glm::vec2>> shellsList;

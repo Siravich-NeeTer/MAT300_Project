@@ -27,6 +27,7 @@ private:
 
 	bool isHidePolyLine = false;
 	bool isPointMove = false;
+	bool isHideShell = false;
 	int pointSelectIndex = -1;
 	int pointMoveIndex = -1;
 
