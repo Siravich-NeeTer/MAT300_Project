@@ -28,9 +28,15 @@ float BernsteinPolynomial(int i, int degree, float t);
 float NestedLinearInterpolation(std::vector<float> coefficientList, float t);
 glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t);
 glm::vec2 NestedLinearInterpolation(std::vector<glm::vec2> positionList, float t, std::vector<std::vector<glm::vec2>>& shellPosition);
+glm::vec3 NestedLinearInterpolation(std::vector<glm::vec3> positionList, float t);
+glm::vec3 NestedLinearInterpolation(std::vector<glm::vec3> positionList, float t, std::vector<std::vector<glm::vec3>>& shellPosition);
 // Mid Point (Divide-Conquer)
 std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList);
 std::vector<glm::vec2> MidPointSubDivision(const std::vector<glm::vec2>& positionList, int division);
+
+std::vector<glm::vec3> MidPointSubDivision(const std::vector<glm::vec3>& positionList);
+std::vector<glm::vec3> MidPointSubDivision(const std::vector<glm::vec3>& positionList, int division);
+
 // Newton Form
 // -Use double variable type since when we substitute there are a chance that can overflow (in case)
 // -- p(t) = [...]g + [...]gt + [...]gt(t-1) + ... + [...]g(t!)

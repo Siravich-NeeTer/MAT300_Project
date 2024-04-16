@@ -85,6 +85,74 @@ void GraphTable::InitTable(TableType tableType, const glm::vec2& verticalSize, c
 
 	m_Table_VBO.UnBind();
 }
+void GraphTable::InitTable(TableType tableType, const glm::vec2& yAxisSize, const glm::vec2& xAxisSize, const glm::vec2& zAxisSize)
+{
+	m_CurrentTableType = tableType;
+
+	// Initialize Base-Graph
+	float offset = 0.1f;
+
+	float yMin = yAxisSize.x;
+	float yMax = yAxisSize.y;
+	float xMin = xAxisSize.x;
+	float xMax = xAxisSize.y;
+	float zMin = zAxisSize.x;
+	float zMax = zAxisSize.y;
+
+	// Draw Base-Line
+	// - Vertical Line
+	m_TableVertices.push_back({ 0.0f, yMin - offset, 0.0f });
+	m_TableVertices.push_back({ 0.0f, yMax + offset, 0.0f });
+	// - Horizontal Line
+	m_TableVertices.push_back({ xMin - offset, 0.0f, 0.0f });
+	m_TableVertices.push_back({ xMax + offset, 0.0f, 0.0f });
+	// - Z-Axis Line
+	m_TableVertices.push_back({ 0.0f, 0.0f, zMin - offset });
+	m_TableVertices.push_back({ 0.0f, 0.0f, zMax + offset });
+
+	// Initialize Graph on Y-Axis
+	for (int i = yMin; i <= yMax; i++)
+	{
+		if (i == 0)
+			continue;
+
+		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { -0.2f, i }, 0.2f, { 1.0f, 0.0f, 0.0f }));
+		m_TableVertices.push_back({ -0.05f, i, 0.0f });
+		m_TableVertices.push_back({ 0.05f, i, 0.0f });
+	}
+
+	// Initialize Graph on Horizontal
+	for (int i = xMin; i <= xMax; i++)
+	{
+		if (i == 0)
+			continue;
+
+		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { i, -0.2f }, 0.2f, { 1.0f, 0.0f, 0.0f }));
+		m_TableVertices.push_back({ 0.0f, -0.05f, i });
+		m_TableVertices.push_back({ 0.0f, 0.05f, i });
+	}
+
+
+	// Initialize Graph on Z-Axis
+	for (int i = xMin; i <= xMax; i++)
+	{
+		if (i == 0)
+			continue;
+
+		m_TextGraphList.push_back(TextRenderer::GetInstance()->AddText(std::to_string(i), { -0.2f, 0.0f, i }, 0.2f, { 1.0f, 0.0f, 0.0f }));
+		m_TableVertices.push_back({ i, -0.05f, 0.0f });
+		m_TableVertices.push_back({ i, 0.05f, 0.0f });
+	}
+
+	// Bind with Buffer
+	m_Table_VAO.Bind();
+	m_Table_VBO.BufferData(3 * sizeof(float) * m_TableVertices.size(), m_TableVertices.data(), false);
+
+	m_Table_VAO.Attribute(m_Table_VBO, 0, 3, GL_FLOAT, 3 * sizeof(float), 0);
+
+	m_Table_VBO.UnBind();
+}
+
 void GraphTable::Render(const Window& window, const Camera& camera)
 {
 	if (m_TableVertices.empty())

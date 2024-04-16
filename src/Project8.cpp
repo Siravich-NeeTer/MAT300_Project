@@ -4,7 +4,7 @@ Project8::Project8(GraphTable& graphTable)
 	: IProject(graphTable)
 {
 	// Init GraphTable
-	graphTable.InitTable(GraphTable::TableType::XY_TABLE, { -10.0f, 10.0f }, { -10.0f, 10.0f });
+	graphTable.InitTable(GraphTable::TableType::XYZ_TABLE, { -10.0f, 10.0f }, { -10.0f, 10.0f }, { -10.0f, 10.0f });
 	m_CurrentGraphMethod = GRAPH_METHOD::BB;
 
 	// Set DragPointController Type
@@ -50,12 +50,14 @@ void Project8::Update(Window& window, Camera& camera, const float& dt)
 }
 void Project8::UpdateUI()
 {
-	ImGui::Begin("Project_2");
+	ImGui::Begin("Project_8");
 
 	// -------------------- Print Mouse Position --------------------
 	std::stringstream mousePos, curPos, tPos;
+	/*
 	mousePos << std::fixed << std::setprecision(3) << m_CurrentMousePosition.x << ',' << m_CurrentMousePosition.y;
 	ImGui::Text(std::string("Mouse Position: (" + mousePos.str() + ")").c_str());
+	*/
 
 	curPos << std::fixed << std::setprecision(3) << m_ControlPoint_t->position.x << ',' << m_ControlPoint_t->position.y;
 	tPos << std::fixed << "(t = " << std::setprecision(3) << m_Current_t << ")";
@@ -138,7 +140,7 @@ void Project8::UpdateUI()
 	{
 		for (int i = 0; i <= degree; i++)
 		{
-			if (ImGui::SliderFloat2(std::string("P" + std::to_string(i)).c_str(), &m_ControlPoints[i]->position[0], -10.0f, 10.0f))
+			if (ImGui::SliderFloat3(std::string("P" + std::to_string(i)).c_str(), &m_ControlPoints[i]->position[0], -10.0f, 10.0f))
 			{
 				PlotGraph();
 			}
@@ -197,7 +199,7 @@ void Project8::PlotGraph()
 	// Using NLI(Nested Linear Interpolation) Method
 	else if (m_CurrentGraphMethod == GRAPH_METHOD::NLI)
 	{
-		std::vector<glm::vec2> positionList(degree + 1);
+		std::vector<glm::vec3> positionList(degree + 1);
 		// Update Coefficients (aka. Base) to std::vector 
 		for (int i = 0; i <= degree; i++)
 		{
@@ -208,7 +210,7 @@ void Project8::PlotGraph()
 		{
 			m_MainGraph->Plot(NestedLinearInterpolation(positionList, t));
 		}
-		std::vector<std::vector<glm::vec2>> shellsList;
+		std::vector<std::vector<glm::vec3>> shellsList;
 		NestedLinearInterpolation(positionList, m_Current_t, shellsList);
 		// If ShellList > currentShell Graph
 		while (shellsList.size() > m_Shells.size())
@@ -233,7 +235,7 @@ void Project8::PlotGraph()
 	// Using Mid Point Method
 	else if (m_CurrentGraphMethod == GRAPH_METHOD::MID_POINT)
 	{
-		std::vector<glm::vec2> positionList(degree + 1);
+		std::vector<glm::vec3> positionList(degree + 1);
 		// Update Coefficients (aka. Base) to std::vector 
 		for (int i = 0; i <= degree; i++)
 		{

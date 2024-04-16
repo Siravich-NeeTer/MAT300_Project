@@ -109,7 +109,7 @@ class Camera
 		}
 
 		// Process input received from any keyboard-like input system.
-		void Input(const float& deltaTime)
+		void Input2D(const float& deltaTime)
 		{
 			float velocity = m_MovementSpeed * deltaTime;
 			// Front/Back
@@ -122,12 +122,10 @@ class Camera
 				m_Position += 5.0f * Input::scrollOffset * m_Front * velocity;
 
 			// TODO Remove Camera-Z-Pos Limit
-			/*
 			if (m_Position.z < 0.5f)
 				m_Position.z = 0.5f;
 			else if (m_Position.z > 10.0f)
 				m_Position.z = 10.0f;
-			*/
 
 			// Left/Right
 			if (Input::IsKeyPressed(GLFW_KEY_D))
@@ -143,6 +141,40 @@ class Camera
 
 		}
 
+		void Input3D(const float& deltaTime)
+		{
+			float velocity = m_MovementSpeed * deltaTime;
+			// Front/Back
+			if (Input::IsKeyPressed(GLFW_KEY_W))
+				m_Position += m_Front * velocity;
+			if (Input::IsKeyPressed(GLFW_KEY_S))
+				m_Position -= m_Front * velocity;
+
+			if (Input::scrollOffset != 0.0f)
+				m_Position += 5.0f * Input::scrollOffset * m_Front * velocity;
+
+			// TODO Remove Camera-Z-Pos Limit
+			/*
+			if (m_Position.z < 0.5f)
+				m_Position.z = 0.5f;
+			else if (m_Position.z > 10.0f)
+				m_Position.z = 10.0f;
+			*/
+
+			// Left/Right
+			if (Input::IsKeyPressed(GLFW_KEY_D))
+				m_Position += m_Right * velocity;
+			if (Input::IsKeyPressed(GLFW_KEY_A))
+				m_Position -= m_Right * velocity;
+
+			// Up/Down
+			if (Input::IsKeyPressed(GLFW_KEY_E))
+				m_Position.y += velocity;
+			if (Input::IsKeyPressed(GLFW_KEY_Q))
+				m_Position.y -= velocity;
+
+		}
+
 		// Getter
 		glm::mat4 GetViewMatrix() const
 		{
@@ -153,6 +185,10 @@ class Camera
 			return glm::perspective(glm::radians(45.0f), (float)window.GetWidth() / (float)window.GetHeight(), 0.1f, 100.0f);
 		}
 		glm::vec3 GetPosition() const { return m_Position; }
+		void ResetCameraPositionTo(glm::vec3& newPosition)
+		{
+			*this = Camera(newPosition);
+		}
 
 		void ResetMousePosition()
 		{

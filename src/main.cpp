@@ -31,12 +31,18 @@
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+glm::vec3 orgPos = glm::vec3(2, 0, 5);
+Camera cam(orgPos);
+
 bool isCameraMove = false;
+bool isProject8 = false;
 IProject *BaseProject = nullptr;
 void CleanBaseProject()
 {
 	if (BaseProject)
 	{
+		isProject8 = false;
+		cam.ResetCameraPositionTo(orgPos);
 		delete BaseProject;
 		BaseProject = nullptr;
 	}
@@ -63,7 +69,6 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
-	Camera cam(glm::vec3(2, 0, 5));
 	GraphTable graphTable;
 
 	// --------------- Game Loop ---------------
@@ -86,9 +91,12 @@ int main()
 		// Update Camera
 		if (isCameraMove)
 			cam.ProcessMousesMovement();
-		cam.Input(dt);
+		if(isProject8)
+			cam.Input3D(dt);
+		else
+			cam.Input2D(dt);
 
-		if (Input::IsKeyBeginPressed(GLFW_KEY_LEFT_ALT) && dynamic_cast<Project8*>(BaseProject))
+		if (Input::IsKeyBeginPressed(GLFW_KEY_LEFT_ALT) && isProject8)
 		{
 			cam.ResetMousePosition();
 			isCameraMove = !isCameraMove;
@@ -147,6 +155,7 @@ int main()
 		if (ImGui::Button("Project 8"))
 		{
 			CleanBaseProject();
+			isProject8 = true;
 			BaseProject = new Project8(graphTable);
 		}
 

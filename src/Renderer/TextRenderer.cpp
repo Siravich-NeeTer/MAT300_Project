@@ -82,6 +82,11 @@ Text* TextRenderer::AddText(const std::string& text, glm::vec2 pos, float fontsi
     textList.push_back(new Text(text, pos, fontsize, color));
     return textList.back();
 }
+Text* TextRenderer::AddText(const std::string& text, glm::vec3 pos, float fontsize, const glm::vec3& color)
+{
+    textList.push_back(new Text(text, pos, fontsize, color));
+    return textList.back();
+}
 void TextRenderer::RenderText(Window& window, Camera& camera)
 {
     m_TextShader.Activate();

@@ -76,6 +76,7 @@ class TextRenderer
 		void Clean();
 
 		Text* AddText(const std::string& text, glm::vec2 pos, float fontsize, const glm::vec3& color);
+		Text* AddText(const std::string& text, glm::vec3 pos, float fontsize, const glm::vec3& color);
 		void RenderText(Window& window, Camera& camera);
 
 	private:

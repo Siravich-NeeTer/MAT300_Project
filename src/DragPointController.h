@@ -162,7 +162,7 @@ class DragPointController
 				if (!m_DragPoints[i]->isActive)
 					continue;
 
-				m_Shader.SetMat4("u_Model", glm::translate(glm::mat4(1.0f), glm::vec3(m_DragPoints[i]->position.x, m_DragPoints[i]->position.y, 0.0f)));
+				m_Shader.SetMat4("u_Model", glm::translate(glm::mat4(1.0f), glm::vec3(m_DragPoints[i]->position.x, m_DragPoints[i]->position.y, m_DragPoints[i]->position.z)));
 				m_Shader.SetVec3("u_Color", m_DragPoints[i]->color);
 
 				m_VAO.Bind();
