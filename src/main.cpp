@@ -24,6 +24,7 @@
 #include "Project4.h"
 #include "Project5.h"
 #include "Project6.h"
+#include "Project7.h"
 
 // Screen Size
 const int SCREEN_WIDTH = 800;
@@ -126,6 +127,11 @@ int main()
 		{
 			CleanBaseProject();
 			BaseProject = new Project6(graphTable);
+		}
+		if (ImGui::Button("Project 7"))
+		{
+			CleanBaseProject();
+			BaseProject = new Project7(graphTable);
 		}
 
 		if (ImGui::CollapsingHeader("Graph Table Component"))

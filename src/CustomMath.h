@@ -19,6 +19,9 @@ class Pascal
 		static std::vector<std::vector<double>> m_PascalValue;
 };
 
+float Lerp(float a, float b, float t);
+float Clamp(float val, float min, float max);
+
 // Bi(t) = dPi * (1-t)^(d-i) * t^i
 float BernsteinPolynomial(int i, int degree, float t);
 // NLI Method
@@ -55,3 +58,7 @@ float Cramer_BSpline(float t, int degree, int N, int i);
 // Polar form
 glm::vec2 PolarForm(const std::vector<glm::vec2>& basePoint, const std::vector<float>& coefficientList, int startIdx, int endIdx);
 glm::vec2 NestedLinearInterpolation_DeBoor(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, float t);
+
+// DeBoor B-Spline
+glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t); glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t);
+glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t); glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t, std::vector<std::vector<glm::vec2>>& shellPosition);

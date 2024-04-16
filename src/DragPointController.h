@@ -23,10 +23,11 @@ struct DragPoint
 	glm::vec3 color;
 	bool isMove;
 	bool isActive;
+	bool isSelect;
 	DragType dragType;
 
 	DragPoint(const glm::vec2& _position, const glm::vec3& _color, const DragType &_dragType)
-		: position(_position), color(_color), dragType(_dragType), isMove(false), isActive(true)
+		: position(_position), color(_color), dragType(_dragType), isMove(false), isActive(true), isSelect(false)
 	{
 	}
 };
@@ -132,10 +133,12 @@ class DragPointController
 				{
 					m_DragPoints[i]->color = { 0.0f, 1.0f, 1.0f };
 					m_CurrentSelectedDragPoint = m_DragPoints[i];
+					m_DragPoints[i]->isSelect = true;
 				}
 				else
 				{
 					m_DragPoints[i]->color = { 0.0f, 0.0f, 1.0f };
+					m_DragPoints[i]->isSelect = false;
 				}
 				m_DragPoints[i]->isMove = false;
 			}

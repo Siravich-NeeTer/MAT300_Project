@@ -44,6 +44,20 @@ void Pascal::PrintPascal()
 }
 // ----------------------------------------------------------
 
+float Lerp(float a, float b, float t)
+{
+	return a * (1.0f - t) + b * t;
+}
+float Clamp(float val, float min, float max)
+{
+	if (val < min)
+		return min;
+	if (val > max)
+		return max;
+
+	return val;
+}
+
 float BernsteinPolynomial(int i, int degree, float t)
 {
 	return Pascal::GetValue(degree, i) * std::pow(1.0f - t, degree - i) * std::pow(t, i);
@@ -431,4 +445,60 @@ glm::vec2 NestedLinearInterpolation_DeBoor(const std::vector<glm::vec2>& basePoi
 		points = curPoints;
 	}
 	return points[degree];
+}
+
+glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t)
+{
+	int J = 0;
+	for (size_t i = 0; i < coefficientList.size() - 1; i++)
+	{
+		if (coefficientList[i] <= t && t < coefficientList[i + 1])
+		{
+			J = i;
+			break;
+		}
+	}
+
+	std::vector<glm::vec2> points(basePoint);
+	for (size_t p = 1; p <= degree; p++)
+	{
+		std::vector<glm::vec2> curPoints(basePoint.size());
+		for (size_t i = J - degree + p; i <= J; i++)
+		{
+			float ti = coefficientList[i];
+			float t_idp = coefficientList[i + degree - (p - 1)];
+			curPoints[i] = (((t - ti) / (t_idp - ti)) * points[i] + ((t_idp - t) / (t_idp - ti)) * points[i - 1]);
+		}
+		points = curPoints;
+	}
+	return points[J];
+}
+glm::vec2 DeBoor_BSpline(const std::vector<glm::vec2>& basePoint, std::vector<float>& coefficientList, int degree, float t, std::vector<std::vector<glm::vec2>>& shellPosition)
+{
+	int J = 0;
+	for (size_t i = 0; i < coefficientList.size() - 1; i++)
+	{
+		if (coefficientList[i] <= t && t < coefficientList[i + 1])
+		{
+			J = i;
+			break;
+		}
+	}
+
+	std::vector<glm::vec2> points(basePoint);
+	for (size_t p = 1; p <= degree; p++)
+	{
+		std::vector<glm::vec2> curPoints(basePoint.size());
+		std::vector<glm::vec2> shellList;
+		for (size_t i = J - degree + p; i <= J; i++)
+		{
+			float ti = coefficientList[i];
+			float t_idp = coefficientList[i + degree - (p - 1)];
+			curPoints[i] = (((t - ti) / (t_idp - ti)) * points[i] + ((t_idp - t) / (t_idp - ti)) * points[i - 1]);
+			shellList.push_back(curPoints[i]);
+		}
+		shellPosition.push_back(shellList);
+		points = curPoints;
+	}
+	return points[J];
 }

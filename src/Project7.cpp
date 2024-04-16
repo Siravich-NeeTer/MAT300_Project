@@ -1,6 +1,6 @@
-#include "Project6.h"
+#include "Project7.h"
 
-Project6::Project6(GraphTable& graphTable)
+Project7::Project7(GraphTable& graphTable)
 	: IProject(graphTable)
 {
 	// Init GraphTable
@@ -14,18 +14,15 @@ Project6::Project6(GraphTable& graphTable)
 	InitGraph();
 	PlotGraph();
 }
-Project6::~Project6()
+Project7::~Project7()
 {
 	m_RefGraphTable->RemoveGraph(m_MainGraph);
 	m_RefDragPointController->ClearAllDragPoint();
 }
 
-void Project6::Update(Window& window, Camera& camera, const float& dt)
+void Project7::Update(Window& window, Camera& camera, const float& dt)
 {
-	// If ControlPoints is empty (degree = 0) -> no need to update
-	if (m_ControlPoints.empty())
-		return;
-
+	pointSelectIndex = -1;
 	isPointMove = false;
 	for (int idx = 0; idx < m_ControlPoints.size(); idx++)
 	{
@@ -37,22 +34,39 @@ void Project6::Update(Window& window, Camera& camera, const float& dt)
 			pointMoveIndex = idx;
 			PlotGraph();
 		}
+		if (m_ControlPoints[idx]->isSelect)
+		{
+			pointSelectIndex = idx;
+		}
 	}
 
 	// Update currentMousePosition
 	m_CurrentMousePosition = ConvertMouseToWorldSpace(window, camera, ConvertMouseToNDC(window, { Input::mouseX, Input::mouseY }));
 	if (Input::IsKeyBeginPressed(GLFW_MOUSE_BUTTON_LEFT) && degree < 20)
 	{
-		degree++;
-		UpdateDegree();
+		// Create New Control Points
+		m_KnotSequence.push_back(m_KnotSequence.back() + 1);
+		//m_KnotSequence.push_back(m_KnotSequence.back() + 1);
+		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
+		// Update Control Points' position to cursor position
 		m_ControlPoints.back()->position = m_CurrentMousePosition;
-		m_OrgPositionList.back() = m_ControlPoints.back()->position;
+
+		PlotGraph();
+	}
+	else if (Input::IsKeyBeginPressed(GLFW_MOUSE_BUTTON_MIDDLE) && pointSelectIndex != -1)
+	{
+		m_RefDragPointController->RemoveDragPoint(m_ControlPoints[pointSelectIndex]);
+		m_ControlPoints.erase(m_ControlPoints.begin() + pointSelectIndex);
+
+		m_KnotSequence.pop_back();
+
 		PlotGraph();
 	}
 
 	UpdateUI();
 }
-void Project6::UpdateUI()
+void Project7::UpdateUI()
 {
 	ImGui::Begin("Project_6");
 
@@ -78,17 +92,27 @@ void Project6::UpdateUI()
 	sKnotSequence << "]";
 	ImGui::Text(sKnotSequence.str().c_str());
 
-	if (ImGui::Button("Toggle Knot Sequence to Default"))
+	if (ImGui::CollapsingHeader("Knot Sequence"))
 	{
-		isKnotSequenceDefault = !isKnotSequenceDefault;
-		PlotGraph();
+		for (int i = 0; i < m_KnotSequence.size(); i++)
+		{
+			std::string text = "t" + std::to_string(i);
+
+			float v_min = (i == 0 ? m_KnotSequence[i + 1] - 1.0f : m_KnotSequence[i - 1]);
+			float v_max = (i == m_KnotSequence.size() - 1 ? m_KnotSequence[i - 1] + 1.0f : m_KnotSequence[i + 1]);
+
+			if (ImGui::SliderFloat(text.c_str(), &m_KnotSequence[i], v_min, v_max))
+			{
+				PlotGraph();
+			}
+		}
 	}
 
 	ImGui::Text(std::string("Degree : " + std::to_string(degree)).c_str());
 	ImGui::SameLine();
-	if (ImGui::SmallButton("-")) { if (degree > 1) { degree--; } UpdateDegree(); PlotGraph(); }
+	if (ImGui::SmallButton("-")) { if (degree > 1) { degree--; m_KnotSequence.pop_back(); } PlotGraph(); }
 	ImGui::SameLine();
-	if (ImGui::SmallButton("+")) { if (degree < 20) { degree++; } UpdateDegree(); PlotGraph(); }
+	if (ImGui::SmallButton("+")) { if (degree < 20) { degree++; m_KnotSequence.push_back(m_KnotSequence.back() + 1); } PlotGraph(); }
 
 
 	if (ImGui::SliderFloat("t", &m_Current_t, 0.0f, 1.0f))
@@ -125,7 +149,7 @@ void Project6::UpdateUI()
 	{
 		for (int i = 0; i <= degree; i++)
 		{
-			if (ImGui::SliderFloat2(std::string((isKnotSequenceDefault ? "Q" : "P") + std::to_string(i)).c_str(), &m_ControlPoints[i]->position[0], -10.0f, 10.0f))
+			if (ImGui::SliderFloat2(std::string("P" + std::to_string(i)).c_str(), &m_ControlPoints[i]->position[0], -10.0f, 10.0f))
 			{
 				PlotGraph();
 			}
@@ -136,99 +160,91 @@ void Project6::UpdateUI()
 	ImGui::End();
 }
 
-void Project6::InitGraph()
+void Project7::InitGraph()
 {
 	// Add new Graph
 	m_DraftLineGraph = m_RefGraphTable->AddGraph("Draft Line", { 1.0f, 0.0f, 0.0f });
 	m_DraftLineGraph->SetThickness(2.0f);
 	m_MainGraph = m_RefGraphTable->AddGraph("Interpolating Curve", { 0.0f, 1.0f, 0.0f });
 
-	// Initialize Degree = 1
-	degree = 1;
+	// Initialize Degree = 3
+	degree = 3;
 	isHidePoint = false;
 
-	// Initialize Control Points a0, a1
-	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	m_OrgPositionList.push_back(m_ControlPoints.back()->position);
-	m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	m_OrgPositionList.push_back(m_ControlPoints.back()->position);
+	for (int i = 0; i < degree + 1; i++)
+	{
+		m_KnotSequence.push_back(i);
+	}
 
 	m_RefDragPointController->SetDragType(DragPoint::DragType::NONE);
-	m_ControlPoint_t = m_RefDragPointController->AddDragPoint(m_ControlPoints[0]->position, glm::vec3(1.0f, 0.0f, 1.0f));
+	m_ControlPoint_t = m_RefDragPointController->AddDragPoint(glm::vec2(0.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+	m_ControlPoint_t->isActive = false;
 	m_RefDragPointController->SetDragType(DragPoint::DragType::DRAG_XY);
 }
-void Project6::PlotGraph()
+void Project7::PlotGraph()
 {
-	// Update Knot Sequence
-	m_KnotSequence.clear();
-	if (isKnotSequenceDefault)
-	{
-		for (int i = 0; i < degree; i++)
-			m_KnotSequence.push_back(-(degree - i) / 10.0f);
-		m_KnotSequence.push_back(0.0f);
-		m_KnotSequence.push_back(1.0f);
-		for (int i = 1; i <= degree; i++)
-			m_KnotSequence.push_back(1 + (i / 10.0f));
-	}
-	else
-	{
-		// Naive Knot
-		for (int i = 0; i < degree + 1; i++)
-			m_KnotSequence.push_back(0);
-		for (int i = 0; i < degree + 1; i++)
-			m_KnotSequence.push_back(1);
-	}
-	
 	// Clear existing Graph first
 	m_DraftLineGraph->Clear();
 	m_MainGraph->Clear();
+	// Clear Shell
+	for (int i = 0; i < m_Shells.size(); i++)
+	{
+		m_Shells[i]->Clear();
+		m_Shells[i]->SetActive(false);
+	}
 
-	if (isPointMove)
-		m_OrgPositionList[pointMoveIndex] = m_CurrentMousePosition;
+	if (m_ControlPoints.size() < 2)
+	{
+		m_ControlPoint_t->isActive = false;
+		return;
+	}
 
-	std::vector<glm::vec2> positionList(degree + 1);
+	std::vector<glm::vec2> positionList(m_ControlPoints.size());
 	// Update Coefficients (aka. Base) to std::vector
-	for (int i = 0; i <= degree; i++)
+	for (int i = 0; i < m_ControlPoints.size(); i++)
 	{
-		positionList[i] = m_OrgPositionList[i];
-	}
-
-	// Plot Graph
-	std::vector<glm::vec2> controlPoints_Q;
-	for (int i = 1; i <= degree + 1; i++)
-	{
-		glm::vec2 result = PolarForm(positionList, m_KnotSequence, i, i + degree - 1);
-		controlPoints_Q.push_back(result);
-	}
-
-	for (int i = 0; i <= degree; i++)
-	{
-		m_ControlPoints[i]->position = controlPoints_Q[i];
+		positionList[i] = m_ControlPoints[i]->position;
 		m_DraftLineGraph->Plot(m_ControlPoints[i]->position);
 	}
 
-	glm::vec2 pos;
-	for (float t = 0.0f; t <= m_Current_t; t += 0.001f)
+	if (degree >= m_ControlPoints.size())
 	{
-		pos = NestedLinearInterpolation_DeBoor(controlPoints_Q, m_KnotSequence, t);
+		m_ControlPoint_t->isActive = false;
+		return;
+	}
+
+	m_ControlPoint_t->isActive = true;
+
+	glm::vec2 pos(0.0f);
+	float from = m_KnotSequence[degree];
+	float to = Lerp(m_KnotSequence[degree], m_KnotSequence[m_KnotSequence.size() - degree - 1], m_Current_t);
+	for (float t = from; t <= to; t += 0.001f)
+	{
+		pos = DeBoor_BSpline(positionList, m_KnotSequence, degree, t);
 		m_MainGraph->Plot(pos);
 	}
 	m_ControlPoint_t->position = pos;
-}
 
-int* Project6::UpdateDegree()
-{
-	while (degree > m_ControlPoints.size() - 1)
+	float epsilon = 0.001f;
+	std::vector<std::vector<glm::vec2>> shellsList;
+	DeBoor_BSpline(positionList, m_KnotSequence, degree, Clamp(to, m_KnotSequence[degree] + epsilon, m_KnotSequence[m_KnotSequence.size() - degree - 1] - epsilon), shellsList);
+	// If ShellList > currentShell Graph
+	while (shellsList.size() > m_Shells.size())
 	{
-		m_ControlPoints.push_back(m_RefDragPointController->AddDragPoint(glm::vec2(0.0f, 0.0f), m_ControlPoints[0]->color));
-		m_OrgPositionList.push_back(m_ControlPoints.back()->position);
+		m_Shells.push_back(m_RefGraphTable->AddGraph("Shell " + std::to_string(m_Shells.size() + 1), { 1.0f, 0.0f, 1.0f }));
 	}
-	while (degree < m_ControlPoints.size() - 1)
+	// If ShellList < currentShell Graph
+	for (int i = m_Shells.size(); i > shellsList.size(); i--)
 	{
-		m_RefDragPointController->RemoveDragPoint(m_ControlPoints.back());
-		m_ControlPoints.pop_back();
-		m_OrgPositionList.pop_back();
+		m_Shells[i - 1]->SetActive(false);
 	}
-
-	return &degree;
+	for (int i = 0; i < shellsList.size(); i++)
+	{
+		m_Shells[i]->Clear();
+		m_Shells[i]->SetActive(true);
+		for (int j = 0; j < shellsList[i].size(); j++)
+		{
+			m_Shells[i]->Plot(shellsList[i][j]);
+		}
+	}
 }
